@@ -3,56 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Infotainment Dummy – Touch Logger (Paper-Features F1–F10)</title>
+  <title>Infotainment Dummy – Touch Logger</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Infotainment Dummy – Touch Logger</h1>
+  <!-- Dünne Top-Bar -->
+  <header id="topbar">
+    <div id="topbar-left">
+      <strong>Hinweis:</strong>
+      <span id="instruction">Tippe eine Kachel an, um das Untermenü zu öffnen.</span>
+    </div>
+    <div id="topbar-right">
+      <button id="startSession">Start Session</button>
+      <button id="endSession">End Session</button>
+      <button id="exportCSV">Export Gesten</button>
+      <button id="exportFeatures">Export Features</button>
+      <button id="calibrate">Kalibrieren</button>
+      <span id="pxmmInfo" class="muted"></span>
+    </div>
+  </header>
 
-  <div class="controls">
-    <button id="startSession">Start Session</button>
-    <button id="endSession">End Session</button>
-    <button id="exportCSV">Export Gesten CSV</button>
-    <button id="exportFeatures">Export Features CSV</button>
-    <button id="calibrate">Kalibrieren (px/mm)</button>
-    <span id="pxmmInfo" class="muted"></span>
-  </div>
-
-  <div id="tasks" aria-label="Aufgabenwahl">
-    <div class="task" data-task="music" tabindex="0">🎵 Musik</div>
-    <div class="task" data-task="nav" tabindex="0">🗺️ Navigation</div>
-    <div class="task" data-task="phone" tabindex="0">📞 Telefon</div>
-    <div class="task" data-task="settings" tabindex="0">⚙️ Einstellungen</div>
-    <div class="task" data-task="message" tabindex="0">💬 Nachricht</div>
-    <div class="task" data-task="map" tabindex="0">🧭 Karte</div>
-    <div class="task" data-task="climate" tabindex="0">🌡️ Klima</div>
-  </div>
-
-  <div class="row">
-    <div id="pad" aria-label="Gestenfläche">
-      <div class="pad-hint">Hier interagieren (Taps/Swipes), geführt durch die Schritte rechts</div>
+  <main id="infotainment">
+    <div id="statusbar">
+      <span>LTE</span><span>12:00</span><span>21°C</span>
     </div>
 
-    <aside id="submenu">
-      <h2 id="submenuTitle">Kein Task gewählt</h2>
-      <div class="steps" id="steps"></div>
-      <div class="btnrow">
-        <button id="startGuided" class="secondary" disabled>Geführten Task starten</button>
-        <button id="finishTask" class="secondary" disabled>Task abschließen</button>
-        <button id="resetTask" class="secondary" disabled>Zurücksetzen</button>
-      </div>
-      <div class="muted" id="taskInfo"></div>
-    </aside>
-  </div>
+    <!-- App-Content: Ebene 1 = Kacheln, Ebene 2+ = App mit Zurück-Pfeil -->
+    <section id="appContent" aria-label="Inhalt"></section>
 
-  <pre id="logArea" aria-live="polite"></pre>
-  <pre id="featuresArea"></pre>
+    <!-- Keine Dock-Leiste mehr -->
+  </main>
+
+  <section id="panels">
+    <pre id="featuresArea"></pre>
+  </section>
 
   <!-- Calibration dialog -->
   <dialog id="calDialog">
     <form method="dialog" class="cal-form">
       <h2>Kalibrieren</h2>
-      <p>Lege ein Lineal an und ziehe den Schieber, bis der Balken exakt <strong>50 mm</strong> lang ist.</p>
+      <p>Zieh den Schieber, bis der Balken exakt <strong>50 mm</strong> lang ist.</p>
       <div class="ruler-row">
         <div id="ruler" aria-label="Kalibrierlineal"></div>
         <input id="rulerRange" type="range" min="50" max="800" value="260">
