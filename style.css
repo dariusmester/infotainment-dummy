@@ -11,9 +11,9 @@ body { background:#0b1220; color:#e8f3ff; font-family:system-ui,-apple-system,Se
 .muted { opacity:.7; font-size:12px; }
 
 /* Layout */
-#infotainment { display:grid; grid-template-rows:28px 1fr; height:calc(100vh - 44px - 120px); min-height:360px; }
+#infotainment { margin:10px; border-radius:12px; background:linear-gradient(180deg,#06111a,#0a1a26); border:1px solid #14344a; display:grid; grid-template-rows:28px 1fr; height:calc(100vh - 44px - 120px); min-height:360px; }
 #statusbar { display:flex; align-items:center; justify-content:space-between; padding:0 12px; background:#091427; border-bottom:1px solid #14344a; font-size:12px; opacity:.85; }
-#appContent { position:relative; margin:10px; border-radius:12px; background:linear-gradient(180deg,#06111a,#0a1a26); border:1px solid #14344a; overflow:hidden; touch-action:none; }
+#appContent { position:relative;  overflow:hidden; touch-action:none; }
 
 /* Ebene 1: Kachel-Grid (zentriert, 2 Reihen) */
 .grid-home {
@@ -61,10 +61,6 @@ body { background:#0b1220; color:#e8f3ff; font-family:system-ui,-apple-system,Se
   #06111a; background-size:40px 40px; touch-action:none; }
 .map .pin { position:absolute; width:18px; height:18px; background:#ff3b3b; border-radius:50%; transform:translate(-50%,-100%); box-shadow:0 0 0 2px #881a1a; }
 .loading { position:absolute; inset:0; display:grid; place-items:center; font-size:12px; opacity:.8; }
-
-/* Features unten */
-#panels { padding:10px; }
-#featuresArea { background:#02121a; color:#cfe9ff; font-size:12px; padding:10px; border-radius:6px; text-align:left; height:100px; overflow:auto; border:1px solid #14344a; }
 
 /* Calibration dialog */
 dialog#calDialog::backdrop { background: rgb(0 0 0 / .6); }
