@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infotainment Dummy – Touch Logger</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Infotainment Dummy – Touch Logger</h1>
+
+  <div class="controls">
+    <button id="startSession">Start Session</button>
+    <button id="endSession">End Session</button>
+    <button id="exportCSV">Export CSV</button>
+  </div>
+
+  <div id="tasks">
+    <div class="task" data-task="music">🎵 Musik</div>
+    <div class="task" data-task="nav">🗺️ Navigation</div>
+    <div class="task" data-task="phone">📞 Telefon</div>
+    <div class="task" data-task="settings">⚙️ Einstellungen</div>
+    <div class="task" data-task="message">💬 Nachricht</div>
+    <div class="task" data-task="map">🧭 Karte</div>
+  </div>
+
+  <pre id="logArea"></pre>
+
+  <script src="script.js"></script>
+</body>
+</html>
