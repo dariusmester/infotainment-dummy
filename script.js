@@ -1,13 +1,13 @@
 /* ===== Konfiguration ===== */
 const APPS = [
-  { key:"music",   label:"🎵 Musik" },
-  { key:"nav",     label:"🗺️ Navigation" },
-  { key:"phone",   label:"📞 Telefon" },
-  { key:"message", label:"💬 Nachricht" },
-  { key:"settings",label:"⚙️ Einstellungen" },
-  { key:"map",     label:"🧭 Karte" },
-  { key:"climate", label:"🌡️ Klima" },
-  { key:"info",    label:"ℹ️ Fahrzeug" },
+  { key:"music",   icon:"🎵", label:"Musik" },
+  { key:"nav",     icon:"🗺️", label:"Navigation" },
+  { key:"phone",   icon:"📞", label:"Telefon" },
+  { key:"message", icon:"💬", label:"Nachricht" },
+  { key:"settings",icon:"⚙️", label:"Einstellungen" },
+  { key:"map",     icon:"🧭", label:"Karte" },
+  { key:"climate", icon:"🌡️", label:"Klima" },
+  { key:"info",    icon:"ℹ️", label:"Fahrzeug" },
 ];
 
 const TASKS_CONFIG = {
@@ -68,7 +68,7 @@ function renderHome(){
   appContent.innerHTML = `
     <div class="grid-home">
       <div class="grid-wrap">
-        ${APPS.map(a=>`<div class="tile" data-app="${a.key}">${a.label}</div>`).join("")}
+        ${APPS.map(a=>`<div class="tile" data-app="${a.key}">${a.icon}</div>`).join("")}
       </div>
     </div>
   `;
