@@ -68,7 +68,7 @@ function renderHome(){
   appContent.innerHTML = `
     <div class="grid-home">
       <div class="grid-wrap">
-        ${APPS.map(a=>`<div class="tile" data-app="${a.key}">${a.icon}</div>`).join("")}
+        ${APPS.map(a=>`<div class="tile" data-app="${a.key}"><div class="icon-box">${a.icon}</div><span class="menu-label">${a.label}</span></div>`).join("")}
       </div>
     </div>
   `;
