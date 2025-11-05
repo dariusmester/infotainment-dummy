@@ -231,16 +231,13 @@ function enableHomeSwipe(){
 
 /* ===== Ebene 2+: App öffnen mit Zurück-Pfeil ===== */
 function openApp(key){
-  currentTaskKey = key;
-  guidedStepIndex = 0;
-  const title = TASKS_CONFIG[key]?.title || "App";
-  instruction.textContent = title;
+  const title = (APPS.find(a => a.key === key)?.label) || "App";
 
   // App-Shell
   appContent.innerHTML = `
     <div class="pad-toolbar" id="toolbar">
-      <button id="inappBack" title="Zurück">←</button>
-      <div id="title" style="margin-left:6px; font-weight:700;">${title}</div>
+      <button id="inappBack" class="buttonBack" title="Zurück">←</button>
+      <div id="title" style="margin-left:60px; font-weight:700;">${title}</div>
       <div style="flex:1"></div>
     </div>
     <div class="pad-content" id="padArea"></div>
