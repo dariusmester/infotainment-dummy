@@ -1,4 +1,7 @@
-:root { color-scheme: dark; }
+:root { color-scheme: dark; 
+  --primarycolor: #232525;
+  --secondarycolor: #505353;
+}
 * { box-sizing: border-box; }
 body { background:#000000; color:#e8f3ff; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; margin:0; }
 
@@ -35,7 +38,7 @@ body { background:#000000; color:#e8f3ff; font-family:system-ui,-apple-system,Se
 .tile:hover { outline:2px solid #08a0f7; }
 .icon-box{
   width:150px; height:150px; font-size:50px;
-  background:#232525; border:1px solid #505353; border-radius:16px;
+  background:var(--primarycolor); border:1px solid var(--secondarycolor); border-radius:16px;
   display:grid; place-items:center;
   margin-bottom: 15px; 
 }
@@ -46,7 +49,8 @@ body { background:#000000; color:#e8f3ff; font-family:system-ui,-apple-system,Se
 .pad-footer { border-top:1px solid #505353; }
 .pad-toolbar button, .pad-footer button { background:#232525; color:#e8f3ff; border:1px solid #505353; border-radius:10px; padding:6px 10px; cursor:pointer; font-weight: bold; height:50px; width:150px; font-size: 30px;}
 .pad-toolbar input[type="text"] { flex:1; min-width:120px; padding:6px 10px; border-radius:8px; border:1px solid #2a5875; background:#0e2030; color:#e8f3ff; }
-.pad-content { position:absolute; inset:44px 0 44px 0; }
+.pad-content { position:absolute; inset:65px 0 44px 0; }
+
 
 /* Listen / Suggest / Slider / Karte (wie zuvor) */
 .scroll { position:absolute; inset:0; overflow:hidden; touch-action:none; }
@@ -113,3 +117,44 @@ menu { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
   border:1px solid #2a5875; background:#0e2030; cursor:pointer;
 }
 .pager-dots .dot.active{ background:#08a0f7; border-color:#08a0f7; }
+/* Assistenten-Liste */
+.assist-list{
+  position:absolute; inset:0; overflow:auto; padding:8px 10px 12px;
+}
+.assist-item{
+  border:1px solid var(--secondarycolor); border-radius:12px; background:var(--primarycolor);
+  margin:10px 0; overflow:hidden;
+}
+.assist-head{
+  display:flex; align-items:center; gap:12px; padding:0px 12px; cursor:default;
+}
+.assist-title{ font-weight:700; flex:1; font-size: 20px; text-align: left;}
+.chevron{
+  background:var(--primarycolor); color:#e8f3ff; border:0; font-size: 30px; padding:4px 8px; cursor:pointer;
+}
+.assist-body{
+  padding:8px 12px 12px; border-top:1px solid var(--secondarycolor);
+}
+.assist-body.is-disabled{ opacity:.5; }
+.assist-btn{background:transparent; width:auto; border: none; display: flex; align-items: center; height:70px; flex:1;}
+/* iOS-artiger Switch */
+.switch{ position:relative; display:inline-block; width:46px; height:26px; }
+.switch input{ opacity:0; width:0; height:0; }
+.slider-switch{
+  position:absolute; inset:0; border-radius:999px; background:#303d47; transition:.2s;
+}
+.slider-switch:before{
+  content:""; position:absolute; left:3px; top:3px; width:20px; height:20px; background:#fff; border-radius:50%; transition:.2s;
+}
+.switch input:checked + .slider-switch{ background:#08a0f7; }
+.switch input:checked + .slider-switch:before{ transform:translateX(20px); }
+
+/* Form in Body */
+.form-row{ display:grid; grid-template-columns: 200px 1fr; gap:12px; align-items:center; padding:8px 0; }
+.form-row.chk{ grid-template-columns: 1fr; display: flex; align-items: center; width:max-content}
+.form-row label{ font-weight:600; }
+.form-row input[type="number"], .form-row select{
+  background:var(--primarycolor); color:#e8f3ff; border:1px solid var(--secondarycolor); border-radius:8px; padding:6px 8px; width:150px;
+}
+.form-row input[type="range"]{ width:100%; color:white}
+.hint{ grid-column: 2 / -1; }
