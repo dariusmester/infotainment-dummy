@@ -11,7 +11,7 @@ body { background:#000000; color:#e8f3ff; font-family:system-ui,-apple-system,Se
 .muted { opacity:.7; font-size:12px; }
 
 /* Layout */
-#infotainment { margin:10px; border-radius:12px; background:linear-gradient(180deg,#2c2c2c,#353b40); border:1px solid #9e9e9e; display:grid; grid-template-rows:28px 1fr; height:700px; width:1265px;}
+#infotainment { margin:10px; border-radius:12px; background:linear-gradient(180deg,#1d1d1d,#28292a); border:1px solid #9e9e9e; display:grid; grid-template-rows:28px 1fr; height:700px; width:1265px;}
 #statusbar { display:flex; align-items:center; justify-content:space-between; padding: 0 12px; height: 40px; background:#0d1119; border-bottom:0px solid #14344a; font-size:12px; opacity:.85; border-radius: 12px 12px 0px 0px;}
 #appContent { position:relative;  overflow:hidden; touch-action:none; margin-top: 12px;}
 
@@ -35,7 +35,7 @@ body { background:#000000; color:#e8f3ff; font-family:system-ui,-apple-system,Se
 .tile:hover { outline:2px solid #08a0f7; }
 .icon-box{
   width:150px; height:150px; font-size:50px;
-  background:#121d24; border:1px solid #40474b; border-radius:16px;
+  background:#393e41; border:1px solid #40474b; border-radius:16px;
   display:grid; place-items:center;
   margin-bottom: 15px; 
 }
@@ -75,3 +75,41 @@ dialog#calDialog::backdrop { background: rgb(0 0 0 / .6); }
 #ruler { height:10px; background:#08a0f7; border-radius:6px; width:260px; }
 #rulerRange { width:100%; }
 menu { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+
+/* Pager (horizontales Wischen) */
+.pager {
+  position:absolute; inset:0;
+  display:flex; flex-direction:row;
+  width:200%; /* zwei Seiten */
+  height:100%;
+  touch-action:pan-y; /* horizontal selbst behandeln */
+}
+
+.page {
+  width:50%; /* zwei Seiten = je 50% */
+  height:100%;
+  display:grid;
+  place-items:center;
+}
+
+/* Jede Seite hat ihr eigenes zentriertes Grid wie deine Startansicht */
+.page .grid-wrap {
+  display:grid;
+  grid-template-columns: repeat(4, minmax(170px, 1fr));
+  grid-auto-rows: 200px;
+  gap:100px;
+  align-content:center;
+}
+
+/* Dots unten */
+.pager-dots{
+  position:absolute;
+  left:0; right:0; bottom:8px;
+  display:flex; justify-content:center; gap:8px;
+  pointer-events:auto;
+}
+.pager-dots .dot{
+  width:10px; height:10px; border-radius:999px;
+  border:1px solid #2a5875; background:#0e2030; cursor:pointer;
+}
+.pager-dots .dot.active{ background:#08a0f7; border-color:#08a0f7; }
