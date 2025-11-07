@@ -46,8 +46,7 @@ body { background:#000000; color:#e8f3ff; font-family:system-ui,-apple-system,Se
 /* Ebene 2+: App-Shell */
 .pad-toolbar, .pad-footer { display:flex; gap:8px; align-items:center; padding:8px 10px; }
 .pad-toolbar { border-bottom:1px solid #505353; font-size: 30px;}
-.pad-footer { border-top:1px solid #505353; }
-.pad-toolbar button, .pad-footer button { background:#232525; color:#e8f3ff; border:1px solid #505353; border-radius:10px; padding:6px 10px; cursor:pointer; font-weight: bold; height:50px; width:150px; font-size: 30px;}
+.pad-toolbar button { background:#232525; color:#e8f3ff; border:1px solid #505353; border-radius:10px; padding:6px 10px; cursor:pointer; font-weight: bold; height:50px; width:150px; font-size: 30px;}
 .pad-toolbar input[type="text"] { flex:1; min-width:120px; padding:6px 10px; border-radius:8px; border:1px solid #2a5875; background:#0e2030; color:#e8f3ff; }
 .pad-content { position:absolute; inset:65px 0 0 0; }
 
@@ -126,7 +125,7 @@ menu { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
   margin: 0; overflow:hidden;
 }
 .assist-head{
-  display:flex; align-items:center; gap:12px; padding:0px 12px; cursor:default;
+  display:flex; align-items:center; gap:12px; padding:0px 12px; cursor:default; height:70px;
 }
 .assist-title{ font-weight:700; flex:1; font-size: 20px; text-align: left; color:white;}
 .chevron{
@@ -159,12 +158,6 @@ menu { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
 .form-row-slider{display:grid; grid-template-columns: 300px 5fr 1fr; gap:12px; align-items:center; padding:8px 0;}
 .form-row-slider input[type="range"]{ width:100%; color:white;}
 
-/* Spur (Track) */
-input[type="range"]::-webkit-slider-runnable-track {
-  height: 8px;             /* => SPUR-DICKE */
-  background: #0f2939;
-  border-radius: 999px;
-}
 /* Griff (Thumb) */
 input[type="range"]::-webkit-slider-thumb {
   
@@ -177,3 +170,47 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .assist-range-value{margin-left: 50px;}
 .hint{ grid-column: 2 / -1; }
+
+/* kleine UI-Bausteine für Klima */
+.temp-box{ display:flex; align-items:center; gap:8px; }
+.pill{
+  background:#1a3a50; color:var(--color-text); border:1px solid var(--color-border);
+  border-radius:10px; padding:6px 10px; cursor:pointer;
+}
+.pill[disabled]{ opacity:.5; cursor:not-allowed; }
+.temp-read{ min-width:86px; text-align:center; font-weight:700; }
+
+.fan-box{ display:flex; align-items:center; gap:10px; min-width:260px; }
+.assist-range-value{ width:36px; text-align:right; font-variant-numeric: tabular-nums; }
+
+.inline-controls{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.tag{ font-size:12px; opacity:.8; margin-right:10px; }
+
+.btn-group{ display:flex; gap:6px; }
+.seg{
+  background:#1a3a50; color:var(--color-text); border:1px solid var(--color-border);
+  border-radius:999px; padding:6px 12px; cursor:pointer;
+}
+.seg.on{ background:var(--color-accent); color:#00131c; border-color:var(--color-accent); }
+.assist-body.is-disabled{ opacity:.5; pointer-events:none; }
+.temp-box{ display:flex; align-items:center; gap:8px; }
+.pill{ background:#1a3a50; color:var(--color-text,#e8f3ff); border:1px solid var(--color-border,#2a5875); border-radius:10px; padding:6px 10px; cursor:pointer; }
+.pill[disabled]{ opacity:.5; cursor:not-allowed; }
+.temp-read{ min-width:86px; text-align:center; font-weight:700; }
+.fan-box{ display:flex; align-items:center; gap:10px; min-width:260px; }
+.assist-range-value{ width:36px; text-align:right; font-variant-numeric: tabular-nums; }
+.assist-body.is-disabled{ opacity:.5; pointer-events:none; }
+.temp-box{ display:flex; align-items:center; gap:8px; height:40;}
+.pill{ background:#1a3a50; color:var(--color-text,#e8f3ff); border:1px solid var(--color-border,#2a5875); border-radius:10px; padding:6px 10px; cursor:pointer; height:30;}
+.pill[disabled]{ opacity:.5; cursor:not-allowed; }
+.temp-read{ min-width:86px; text-align:center; font-weight:700; }
+
+.fan-box{ display:flex; align-items:center; gap:10px; min-width:260px; }
+.assist-range-value{ width:36px; text-align:right; font-variant-numeric: tabular-nums; }
+
+.btn-group{ display:flex; gap:6px; flex-wrap:wrap; }
+.seg{
+  background:#1a3a50; color:var(--color-text,#e8f3ff); border:1px solid var(--color-border,#2a5875);
+  border-radius:999px; padding:6px 12px; cursor:pointer;
+}
+.seg.on{ background:var(--color-accent,#08a0f7); color:#00131c; border-color:var(--color-accent,#08a0f7); }

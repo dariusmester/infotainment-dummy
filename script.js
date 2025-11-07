@@ -112,6 +112,34 @@ document.getElementById("calibrate").onclick = ()=>{
 /* ===== Ebene 1: Kachel-Grid mit Pager (2 Seiten) ===== */
 let homePageIndex = 0;
 
+/* ===== Klima (Accordion) ===== */
+const CLIMATE_KEY = "climate_state_v3";
+const CLIMATE_DEFAULTS = {
+  temp: { enabled: true, driver: 21.0, passenger: 21.0, rear: 21.0, sync: true },
+  fan:  { enabled: true, level: 30, acOn: true, airflow: { face:true, feet:false, windshield:false, rear:false } } // Mehrfachauswahl
+};
+
+function loadClimate(){
+  const raw = localStorage.getItem(CLIMATE_KEY);
+  if(!raw) return JSON.parse(JSON.stringify(CLIMATE_DEFAULTS));
+  try {
+    const s = JSON.parse(raw);
+    return {
+      temp: {
+        ...CLIMATE_DEFAULTS.temp,
+        ...(s.temp||{})
+      },
+      fan: {
+        ...CLIMATE_DEFAULTS.fan,
+        ...(s.fan||{}),
+        airflow: { ...CLIMATE_DEFAULTS.fan.airflow, ...((s.fan||{}).airflow||{}) }
+      }
+    };
+  } catch { return JSON.parse(JSON.stringify(CLIMATE_DEFAULTS)); }
+}
+function saveClimate(s){ localStorage.setItem(CLIMATE_KEY, JSON.stringify(s)); }
+function clamp(n,min,max){ return Math.min(max, Math.max(min, n)); }
+
 function renderHome(){
   currentTaskKey = null;
   guidedStepIndex = 0;
@@ -490,7 +518,7 @@ function renderAssistSettings(id, s){
         </div>
         <div class="form-row-slider">
           <label class="input-label">Max. Geschwindigkeit (km/h)</label>
-          <input type="range" min="80" max="180" step="10" name="distance" value="${s.distance}" class="assist-range">
+          <input type="range" min="80" max="180" step="10" name="maxSpeed" value="${s.maxSpeed}" class="assist-range">
           <span class="assist-range-value">2</span>
         </div>
         <div class="form-row chk">
@@ -542,11 +570,11 @@ function renderAssistSettings(id, s){
           <span class="slider-switch"></span>
         </label>
       </div>
-
-        <div class="form-row">
-          <label>Offset (km/h)</label>
-          <input type="number" name="offset" min="0" max="20" step="1" value="${s.offset}">
-        </div>
+        <div class="form-row-slider">
+        <label class="input-label">Offset (km/h)</label>
+        <input type="range" min="0" max="20" step="1" name="offset" value="${s.offset}" class="assist-range">
+        <span class="assist-range-value">2</span>
+      </div>
       `;
     case "park":
       return `
@@ -726,36 +754,232 @@ function renderMap(){
 }
 
 function renderClimate(){
-  const pad=document.getElementById("padArea");
+  const pad = document.getElementById("padArea");
+  const st  = loadClimate();
+
   pad.innerHTML = `
-    <div class="pad-toolbar"><button id="openCl">Klima</button></div>
-    <div class="pad-content" id="clBody"></div>`;
-  document.getElementById("openCl").onclick=()=>{
-    document.getElementById("clBody").innerHTML=`
-      <div style="padding:12px; display:flex; gap:10px; align-items:center;">
-        <button id="tDec">−</button>
-        <div id="tVal" style="min-width:60px; text-align:center; font-weight:700;">21.0 °C</div>
-        <button id="tInc">＋</button>
-        <button id="mode">Auto</button>
+    <div class="assist-list">
+
+      <!-- Temperaturen -->
+      <section class="assist-item" data-id="temp">
+        <header class="assist-head">
+          <button class="assist-btn" aria-label="Details umschalten">
+            <div class="chevron">▾</div>
+            <div class="assist-title">Temperaturen</div>
+          </button>
+          <label class="switch">
+            <input type="checkbox" ${st.temp.enabled?"checked":""} aria-label="Temperaturen Ein/Aus">
+            <span class="slider-switch"></span>
+          </label>
+        </header>
+        <div class="assist-body" hidden>
+
+
+          <div class="form-row">
+            <label>Fahrer</label>
+            <div class="temp-box">
+              <button class="pill pill-dec" data-t="driver">−</button>
+              <div class="temp-read" id="t_driver">${st.temp.driver.toFixed(1)} °C</div>
+              <button class="pill pill-inc" data-t="driver">＋</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Beifahrer</label>
+            <div class="temp-box">
+              <button class="pill pill-dec" data-t="passenger" ${st.temp.sync?"disabled":""}>−</button>
+              <div class="temp-read" id="t_pass">${st.temp.passenger.toFixed(1)} °C</div>
+              <button class="pill pill-inc" data-t="passenger" ${st.temp.sync?"disabled":""}>＋</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Rücksitz</label>
+            <div class="temp-box">
+              <button class="pill pill-dec" data-t="rear">−</button>
+              <div class="temp-read" id="t_rear">${st.temp.rear.toFixed(1)} °C</div>
+              <button class="pill pill-inc" data-t="rear">＋</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+          <label>Sync (vorn)</label>
+          <label class="switch">
+            <input type="checkbox" id="syncToggle" ${st.temp.sync?"checked":""}>
+            <span class="slider-switch"></span>
+          </label>
+        </div>
+
+        <div class="form-row">
+        <label>A/C</label>
+        <label class="switch">
+          <input type="checkbox" id="acToggle" ${st.fan.acOn?"checked":""}>
+          <span class="slider-switch"></span>
+        </label>
       </div>
-      <div class="slider"><span class="muted">Gebläse</span><div class="track"><div class="thumb" id="fanThumb" style="left:30%"></div></div></div>`;
-    let t=21.0, auto=true; const track=document.querySelector(".track"), thumb=document.getElementById("fanThumb"); let pct=30;
-    document.getElementById("tDec").onclick=()=>{ t=Math.max(16,t-0.5); document.getElementById("tVal").textContent=t.toFixed(1)+" °C"; };
-    document.getElementById("tInc").onclick=()=>{ t=Math.min(28,t+0.5); document.getElementById("tVal").textContent=t.toFixed(1)+" °C"; };
-    document.getElementById("mode").onclick=(e)=>{ auto=!auto; e.target.textContent=auto?"Auto":"Manuell"; };
-    function setPct(p){ pct=Math.max(0,Math.min(100,p)); thumb.style.left=pct+"%"; }
-    track.addEventListener("pointerdown", e=>{
-      track.setPointerCapture(e.pointerId);
-      function move(ev){ const r=track.getBoundingClientRect(); setPct(((ev.clientX-r.left)/r.width)*100); }
-      function up(){ track.removeEventListener("pointermove", move); track.removeEventListener("pointerup", up); }
-      track.addEventListener("pointermove", move); track.addEventListener("pointerup", up, {once:true});
+      </div>
+
+      </section>
+
+      <!-- Gebläse -->
+      <section class="assist-item" data-id="fan">
+        <header class="assist-head">
+          <button class="assist-btn" aria-label="Details umschalten">
+            <div class="chevron">▾</div>
+            <div class="assist-title">Gebläse</div>
+          </button>
+          <label class="switch">
+            <input type="checkbox" ${st.fan.enabled?"checked":""} aria-label="Gebläse Ein/Aus">
+            <span class="slider-switch"></span>
+          </label>
+        </header>
+        <div class="assist-body" hidden>
+
+          <div class="form-row-slider">
+            <label>Stärke</label>
+            <div class="fan-box">
+              <input id="fanRange" type="range" min="0" max="10" step="1" value="${st.fan.level}" class="assist-range">
+              <span id="fanVal" class="assist-range-value">${st.fan.level}</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Bereiche</label>
+            <div class="btn-group" id="airflowGroup">
+              <button class="seg ${st.fan.airflow.face?'on':''}" data-k="face">Gesicht</button>
+              <button class="seg ${st.fan.airflow.feet?'on':''}" data-k="feet">Füße</button>
+              <button class="seg ${st.fan.airflow.windshield?'on':''}" data-k="windshield">Scheibe</button>
+              <button class="seg ${st.fan.airflow.rear?'on':''}" data-k="rear">Hinten</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  `;
+
+  // Section aktiv/inaktiv (dimmen & sperren)
+  function setSectionEnabled(id, enabled){
+    const sec = pad.querySelector(`.assist-item[data-id="${id}"]`);
+    const body = sec.querySelector(".assist-body");
+    body.classList.toggle("is-disabled", !enabled);
+    body.querySelectorAll("input, button, select").forEach(el=>{
+      if(el.closest(".switch")) return;               // Schalter bleiben aktiv
+      const manuallyDisabled = el.hasAttribute("disabled");
+      el.disabled = !enabled || manuallyDisabled;    // respektiert manuelles disabled (z.B. Sync beim Beifahrer)
     });
-  };
+  }
+  setSectionEnabled("temp", st.temp.enabled);
+  setSectionEnabled("fan",  st.fan.enabled);
+
+  // Accordion
+  pad.querySelectorAll(".assist-item .assist-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const sec = btn.closest(".assist-item");
+      const body = sec.querySelector(".assist-body");
+      const chev = btn.querySelector(".chevron");
+      const open = !body.hasAttribute("hidden");
+      if(open){ body.setAttribute("hidden",""); chev.textContent="▾"; }
+      else    { body.removeAttribute("hidden"); chev.textContent="▴"; }
+    });
+  });
+
+  // Haupt-Toggles (EIN/AUS)
+  pad.querySelectorAll('.assist-item .assist-head .switch input[type="checkbox"]').forEach(sw=>{
+    sw.addEventListener("change", ()=>{
+      const sec = sw.closest(".assist-item");
+      const id  = sec.dataset.id; // "temp" | "fan"
+      const S   = loadClimate();
+      S[id].enabled = sw.checked;
+      saveClimate(S);
+      setSectionEnabled(id, sw.checked);
+    });
+  });
+
+  // Sync vorn
+  const syncEl = pad.querySelector("#syncToggle");
+  if(syncEl){
+    syncEl.addEventListener("change", ()=>{
+      const S = loadClimate();
+      S.temp.sync = syncEl.checked;
+      if(S.temp.sync){ S.temp.passenger = S.temp.driver; }
+      saveClimate(S);
+      // Beifahrer sperren/freigeben
+      pad.querySelectorAll('[data-t="passenger"]').forEach(b=> b.disabled = S.temp.sync);
+      pad.querySelector("#t_pass").textContent = `${S.temp.passenger.toFixed(1)} °C`;
+    });
+  }
+
+  // Temperaturen (Driver/Passenger/Rear) +/- in 0.5 Schritten (16..28)
+  pad.querySelectorAll(".pill-dec, .pill-inc").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const S = loadClimate();
+      const who = btn.dataset.t; // driver | passenger | rear
+      const inc = btn.classList.contains("pill-inc") ? 0.5 : -0.5;
+
+      if(who==="passenger" && S.temp.sync) return; // gesperrt bei Sync
+
+      const keyMap = { driver:"driver", passenger:"passenger", rear:"rear" };
+      const key = keyMap[who];
+      S.temp[key] = clamp(Number((S.temp[key] + inc).toFixed(1)), 16.0, 28.0);
+
+      if(S.temp.sync && who==="driver"){ S.temp.passenger = S.temp.driver; }
+
+      saveClimate(S);
+      pad.querySelector("#t_driver").textContent = `${S.temp.driver.toFixed(1)} °C`;
+      pad.querySelector("#t_pass").textContent   = `${S.temp.passenger.toFixed(1)} °C`;
+      pad.querySelector("#t_rear").textContent   = `${S.temp.rear.toFixed(1)} °C`;
+    });
+  });
+
+  // A/C Toggle
+  const acT = pad.querySelector("#acToggle");
+  if(acT){
+    acT.addEventListener("change", ()=>{
+      const S = loadClimate();
+      S.fan.acOn = acT.checked;
+      saveClimate(S);
+    });
+  }
+
+  // Gebläse + zweifarbige Spur
+  const fan = pad.querySelector("#fanRange");
+  if(fan){
+    const fanVal = pad.querySelector("#fanVal");
+    const paint = ()=>{
+      const v = Number(fan.value);
+      fan.style.background = `linear-gradient(to right, var(--color-accent, #08a0f7) 0%, var(--color-accent, #08a0f7) ${v}%, #303030 ${v}%, #303030 100%)`;
+    };
+    paint();
+    fan.addEventListener("input", ()=>{
+      const S = loadClimate();
+      S.fan.level = Number(fan.value);
+      saveClimate(S);
+      fanVal.textContent = S.fan.level;
+      paint();
+    });
+  }
+
+  // Airflow-Bereiche (Mehrfachauswahl)
+  const group = pad.querySelector("#airflowGroup");
+  if(group){
+    group.addEventListener("click", (e)=>{
+      const b = e.target.closest(".seg"); if(!b) return;
+      const k = b.dataset.k; // face | feet | windshield | rear
+      const S = loadClimate();
+      b.classList.toggle("on");
+      S.fan.airflow[k] = b.classList.contains("on");
+      saveClimate(S);
+    });
+  }
 }
+
 
 function renderInfo(){
   const pad=document.getElementById("padArea");
-  pad.innerHTML = `<div style="display:grid; place-items:center; height:100%;"><div>Fahrzeug-Infos (Dummy)</div></div>`;
+  pad.innerHTML = `<div style="display:grid; place-items:center; height:100%;"><div>Dieses Benutzerinterface ist Teil einer Bachelorarbeit zum Thema Erfassung und Analyse von Touch-Interaktionen in Infotainment-Systemen.
+  Ziel ist es, typische Bediengesten im Fahrzeugumfeld realistisch zu erfassen und daraus Rückschlüsse auf Bedienkomfort, Interaktionsmuster und mögliche emotionale Zustände abzuleiten.
+  Die erfassten Daten werden ausschließlich zu Forschungszwecken verwendet und anonymisiert ausgewertet.</div></div>`;
 }
 
 function renderSeats(){
