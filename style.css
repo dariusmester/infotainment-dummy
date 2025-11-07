@@ -148,13 +148,13 @@ menu { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
 }
 .switch input:checked + .slider-switch{ background:#08a0f7; }
 .switch input:checked + .slider-switch:before{ transform:translateX(30px); }
-
+.input-label{width:300px}
 /* Form in Body */
 .form-row{ display:grid; grid-template-columns: 200px 1fr; gap:12px; align-items:center; padding:8px 0; }
 .form-row.chk{ grid-template-columns: 1fr; display: flex; align-items: center; width:max-content}
-.form-row label{ font-weight:600; }
+.form-row label{ font-weight:600;}
 .form-row input[type="number"], .form-row select{
   background:var(--primarycolor); color:#e8f3ff; border:1px solid var(--secondarycolor); border-radius:8px; padding:6px 8px; width:150px;
 }
-.form-row input[type="range"]{ width:100%; color:white}
+.form-row input[type="range"]{ width:100%; color:white;}
 .hint{ grid-column: 2 / -1; }

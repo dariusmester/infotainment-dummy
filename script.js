@@ -479,19 +479,18 @@ function renderAssistSettings(id, s){
     case "acc":
       return `
         <div class="form-row">
-          <label>Abstandsstufe</label>
+          <label class="input-label">Abstandsstufe</label>
           <input type="range" min="1" max="10" step="1" name="distance" value="${s.distance}">
-          <div class="hint muted">1 = kurz … 4 = lang</div>
         </div>
         <div class="form-row">
-          <label>Max. Geschwindigkeit (km/h)</label>
+          <label class="input-label">Max. Geschwindigkeit (km/h)</label>
           <input type="number" name="maxSpeed" min="30" max="210" step="5" value="${s.maxSpeed}">
         </div>
         <div class="form-row chk">
-        <div width="200">Anfahrassistent (Stop&Go)</div>
+          <label class="input-label">Anfahrassistent (Stop&Go)</label>
           <label class="switch">
-                <input type="checkbox" ${s.restartAssist ? "checked":""}>
-                <span class="slider-switch"></span>
+            <input type="checkbox" name="restartAssist" ${s.restartAssist ? "checked":""}>
+            <span class="slider-switch"></span>
           </label>
         </div>
       `;
@@ -504,12 +503,12 @@ function renderAssistSettings(id, s){
           </select>
         </div>
         <div class="form-row chk">
-          <div width="200px">Spurzentrierung</div>
-            <label class="switch">
+          <label class="input-label">Spurzentrierung</label>
+          <label class="switch">
             <input type="checkbox" name="laneCentering" ${s.laneCentering?"checked":""}>
             <span class="slider-switch"></span>
-        </label>
-      </div>
+          </label>
+        </div>
       `;
     case "bsm":
       return `
@@ -520,14 +519,23 @@ function renderAssistSettings(id, s){
           </select>
         </div>
         <div class="form-row chk">
-          <label><input type="checkbox" name="assistWhenMerging" ${s.assistWhenMerging?"checked":""}> Hilfe beim Einfädeln</label>
-        </div>
+        <label class="input-label">Hilfe beim Einfädeln</label>
+        <label class="switch">
+          <input type="checkbox" name="assistWhenMerging" ${s.assistWhenMerging?"checked":""}>
+          <span class="slider-switch"></span>
+        </label>
+      </div>
       `;
     case "tsr":
       return `
-        <div class="form-row chk">
-          <label><input type="checkbox" name="warnOnOverspeed" ${s.warnOnOverspeed?"checked":""}> Warnung bei Überschreitung</label>
-        </div>
+      <div class="form-row chk">
+        <label class="input-label">Warnung bei Überschreitung</label>
+        <label class="switch">
+          <input type="checkbox" name="warnOnOverspeed" ${s.warnOnOverspeed?"checked":""}>
+          <span class="slider-switch"></span>
+        </label>
+      </div>
+
         <div class="form-row">
           <label>Offset (km/h)</label>
           <input type="number" name="offset" min="0" max="20" step="1" value="${s.offset}">
@@ -535,9 +543,13 @@ function renderAssistSettings(id, s){
       `;
     case "park":
       return `
-        <div class="form-row chk">
-          <label><input type="checkbox" name="autoPark" ${s.autoPark?"checked":""}> Auto-Parken</label>
-        </div>
+      <div class="form-row chk">
+      <label class="input-label">Auto-Parken</label>
+      <label class="switch">
+        <input type="checkbox" name="autoPark" ${s.autoPark?"checked":""}>
+        <span class="slider-switch"></span>
+      </label>
+    </div>
         <div class="form-row">
           <label>Bevorzugte Seite</label>
           <select name="side">
@@ -547,9 +559,13 @@ function renderAssistSettings(id, s){
       `;
     case "camera":
       return `
-        <div class="form-row chk">
-          <label><input type="checkbox" name="autoViewAtReverse" ${s.autoViewAtReverse?"checked":""}> Autom. Rückfahransicht</label>
-        </div>
+      <div class="form-row chk">
+      <label class="input-label"> Autom. Rückfahransicht</label>
+      <label class="switch">
+        <input type="checkbox" name="autoViewAtReverse" ${s.autoViewAtReverse?"checked":""}>
+        <span class="slider-switch"></span>
+      </label>
+    </div>
         <div class="form-row">
           <label>Leitlinien</label>
           <select name="guidelines">
