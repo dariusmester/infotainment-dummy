@@ -260,7 +260,6 @@ function openApp(key){
       <div style="flex:1"></div>
     </div>
     <div class="pad-content" id="padArea"></div>
-    <div class="pad-footer" id="footer"></div>
   `;
   document.getElementById("inappBack").onclick = renderHome;
 
@@ -439,6 +438,12 @@ function renderAssistants(){
     </div>
   `;
 
+  pad.querySelectorAll(".assist-range").forEach(slider => {
+    const val = slider.nextElementSibling;
+    val.textContent = slider.value;
+    slider.addEventListener("input", () => val.textContent = slider.value);
+  });
+  
   // EIN/AUS
   pad.querySelectorAll(".assist-item .switch input").forEach(inp=>{
     inp.addEventListener("change", ()=>{
@@ -478,13 +483,15 @@ function renderAssistSettings(id, s){
   switch(id){
     case "acc":
       return `
-        <div class="form-row">
+        <div class="form-row-slider">
           <label class="input-label">Abstandsstufe</label>
-          <input type="range" min="1" max="10" step="1" name="distance" value="${s.distance}">
+          <input type="range" min="1" max="10" step="1" name="distance" value="${s.distance}" class="assist-range">
+          <span class="assist-range-value">2</span>
         </div>
-        <div class="form-row">
+        <div class="form-row-slider">
           <label class="input-label">Max. Geschwindigkeit (km/h)</label>
-          <input type="number" name="maxSpeed" min="30" max="210" step="5" value="${s.maxSpeed}">
+          <input type="range" min="80" max="180" step="10" name="distance" value="${s.distance}" class="assist-range">
+          <span class="assist-range-value">2</span>
         </div>
         <div class="form-row chk">
           <label class="input-label">Anfahrassistent (Stop&Go)</label>
