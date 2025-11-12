@@ -142,8 +142,8 @@ function saveClimate(s){ localStorage.setItem(CLIMATE_KEY, JSON.stringify(s)); }
 /* ===== Sitze (Accordion) ===== */
 const SEATS_KEY = "seats_state_v1";
 const SEATS_DEFAULTS = {
-  driver: { enabled: true, heating: 0, ventilation: 0, lumbar: 0, massage: { enabled: false, strength: 3 }, position: { height: 5, tilt: 0, reach: 5 } },
-  passenger: { enabled: true, heating: 0, ventilation: 0, lumbar: 0, massage: { enabled: false, strength: 3 }, position: { height: 5, tilt: 0, reach: 5 } },
+  driver: { enabled: true, heating: 0, ventilation: 0, lumbar: 0, massage: { strength: 3 } },
+  passenger: { enabled: true, heating: 0, ventilation: 0, lumbar: 0, massage: { strength: 3 } },
   rear: { enabled: false, heating: 0, ventilation: 0 }
 };
 
@@ -155,13 +155,11 @@ function loadSeats(){
     return {
       driver: {
         ...SEATS_DEFAULTS.driver,
-        ...(s.driver||{}),
-        position: { ...SEATS_DEFAULTS.driver.position, ...((s.driver||{}).position||{}) }
+        ...(s.driver||{})
       },
       passenger: {
         ...SEATS_DEFAULTS.passenger,
-        ...(s.passenger||{}),
-        position: { ...SEATS_DEFAULTS.passenger.position, ...((s.passenger||{}).position||{}) }
+        ...(s.passenger||{})
       },
       rear: {
         ...SEATS_DEFAULTS.rear,
@@ -173,6 +171,40 @@ function loadSeats(){
 function saveSeats(s){ localStorage.setItem(SEATS_KEY, JSON.stringify(s)); }
 
 function clamp(n,min,max){ return Math.min(max, Math.max(min, n)); }
+
+/* ===== Fahrprofil (Drive Mode) ===== */
+const DRIVERMODE_KEY = "drivermode_state_v1";
+const DRIVERMODE_DEFAULTS = {
+  profile: "Comfort", // Eco | Comfort | Sport
+  adaptiveSuspension: "Komfort", // Komfort | Ausgewogen | Sport
+  steeringAssistance: "Normal", // Leicht | Normal | Sportlich
+  regenerativeBraking: 100 // 0-100%
+};
+
+function loadDriveMode(){
+  const raw = localStorage.getItem(DRIVERMODE_KEY);
+  if(!raw) return JSON.parse(JSON.stringify(DRIVERMODE_DEFAULTS));
+  try { const s = JSON.parse(raw); return { ...DRIVERMODE_DEFAULTS, ...s };
+  } catch { return JSON.parse(JSON.stringify(DRIVERMODE_DEFAULTS)); }
+}
+function saveDriveMode(s){ localStorage.setItem(DRIVERMODE_KEY, JSON.stringify(s)); }
+
+/* ===== Fahrzeug (Vehicle) ===== */
+const CAR_KEY = "car_state_v1";
+const CAR_DEFAULTS = {
+  locks: { locked: true, alarm: false, trunk: false },
+  lights: { headlightsAuto: true, interior: false, interiorLevel: 50 },
+  status: { fuelPct: 68, rangeKm: 420, tirePressure: { fl: 2.3, fr: 2.3, rl: 2.4, rr: 2.4 } },
+  drive: { mode: "Comfort" } // Eco | Comfort | Sport
+};
+
+function loadCar(){
+  const raw = localStorage.getItem(CAR_KEY);
+  if(!raw) return JSON.parse(JSON.stringify(CAR_DEFAULTS));
+  try { const s = JSON.parse(raw); return { locks: { ...CAR_DEFAULTS.locks, ...(s.locks||{}) }, lights: { ...CAR_DEFAULTS.lights, ...(s.lights||{}) }, status: { ...CAR_DEFAULTS.status, ...(s.status||{}) }, drive: { ...CAR_DEFAULTS.drive, ...(s.drive||{}) } };
+  } catch { return JSON.parse(JSON.stringify(CAR_DEFAULTS)); }
+}
+function saveCar(s){ localStorage.setItem(CAR_KEY, JSON.stringify(s)); }
 
 function renderHome(){
   currentTaskKey = null;
@@ -333,9 +365,11 @@ function openApp(key){
     case "message": renderMessage(); break;
     case "settings":renderSettings();break;
     case "map":     renderMap();     break;
+  case "car":     renderCar();     break;
     case "climate": renderClimate(); break;
     case "info":    renderInfo();    break;
     case "seats":   renderSeats();   break;
+    case "drivemode": renderDriveMode(); break;
     case "assistants": renderAssistants(); break;
     case "user":    renderUser();    break;
   }
@@ -792,137 +826,114 @@ function renderClimate(){
   const st  = loadClimate();
 
   pad.innerHTML = `
-    <div class="assist-list">
+    <div class="assist-list" style="padding: 12px; display: flex; flex-direction: column; gap: 20px;">
+
+      <!-- AC und Sync Buttons oben -->
+      <div class="btn-group" style="justify-content: center; gap: 12px;">
+        <button id="acBtn" class="lock-trunk-btn${st.fan.acOn ? " open" : ""}">${st.fan.acOn ? "A/C Ein" : "A/C Aus"}</button>
+        <button id="syncBtn" class="lock-trunk-btn${st.temp.sync ? " open" : ""}">${st.temp.sync ? "Sync Ein" : "Sync Aus"}</button>
+      </div>
 
       <!-- Temperaturen -->
-      <section class="assist-item" data-id="temp">
-        <header class="assist-head">
-          <button class="assist-btn" aria-label="Details umschalten">
-            <div class="chevron">▾</div>
-            <div class="assist-title">Temperaturen</div>
-          </button>
-        </header>
-        <div class="assist-body" hidden>
-
-
-          <div class="form-row">
-            <label>Fahrer</label>
-            <div class="temp-box">
-              <button class="pill pill-dec" data-t="driver">−</button>
-              <div class="temp-read" id="t_driver">${st.temp.driver.toFixed(1)} °C</div>
-              <button class="pill pill-inc" data-t="driver">＋</button>
-            </div>
+      <div>
+        <div style="font-weight: 700; margin-bottom: 12px; font-size: 18px;">Temperaturen</div>
+        
+        <div class="form-row">
+          <label>Fahrer</label>
+          <div class="temp-box">
+            <button class="pill pill-dec" data-t="driver">−</button>
+            <div class="temp-read" id="t_driver">${st.temp.driver.toFixed(1)} °C</div>
+            <button class="pill pill-inc" data-t="driver">＋</button>
           </div>
-
-          <div class="form-row">
-            <label>Beifahrer</label>
-            <div class="temp-box">
-              <button class="pill pill-dec" data-t="passenger" ${st.temp.sync?"disabled":""}>−</button>
-              <div class="temp-read" id="t_pass">${st.temp.passenger.toFixed(1)} °C</div>
-              <button class="pill pill-inc" data-t="passenger" ${st.temp.sync?"disabled":""}>＋</button>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label>Rücksitz</label>
-            <div class="temp-box">
-              <button class="pill pill-dec" data-t="rear">−</button>
-              <div class="temp-read" id="t_rear">${st.temp.rear.toFixed(1)} °C</div>
-              <button class="pill pill-inc" data-t="rear">＋</button>
-            </div>
-          </div>
-
-          <div class="form-row">
-          <label>Sync (vorn)</label>
-          <label class="switch">
-            <input type="checkbox" id="syncToggle" ${st.temp.sync?"checked":""}>
-            <span class="slider-switch"></span>
-          </label>
         </div>
 
         <div class="form-row">
-        <label>A/C</label>
-        <label class="switch">
-          <input type="checkbox" id="acToggle" ${st.fan.acOn?"checked":""}>
-          <span class="slider-switch"></span>
-        </label>
-      </div>
-      </div>
-
-      </section>
-
-      <!-- Gebläse -->
-      <section class="assist-item" data-id="fan">
-        <header class="assist-head">
-          <button class="assist-btn" aria-label="Details umschalten">
-            <div class="chevron">▾</div>
-            <div class="assist-title">Gebläse</div>
-          </button>
-        </header>
-        <div class="assist-body" hidden>
-
-          <div class="form-row-slider">
-            <label>Stärke</label>
-            <div class="fan-box">
-              <input id="fanRange" type="range" min="0" max="10" step="1" value="${st.fan.level}" class="assist-range">
-              <span id="fanVal" class="assist-range-value">${st.fan.level}</span>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label>Bereiche</label>
-            <div class="btn-group" id="airflowGroup">
-              <button class="seg ${st.fan.airflow.face?'on':''}" data-k="face">Gesicht</button>
-              <button class="seg ${st.fan.airflow.feet?'on':''}" data-k="feet">Füße</button>
-              <button class="seg ${st.fan.airflow.windshield?'on':''}" data-k="windshield">Scheibe</button>
-              <button class="seg ${st.fan.airflow.rear?'on':''}" data-k="rear">Hinten</button>
-            </div>
+          <label>Beifahrer</label>
+          <div class="temp-box">
+            <button class="pill pill-dec" data-t="passenger" ${st.temp.sync?"disabled":""}>−</button>
+            <div class="temp-read" id="t_pass">${st.temp.passenger.toFixed(1)} °C</div>
+            <button class="pill pill-inc" data-t="passenger" ${st.temp.sync?"disabled":""}>＋</button>
           </div>
         </div>
-      </section>
+
+        <div class="form-row">
+          <label>Rücksitz</label>
+          <div class="temp-box">
+            <button class="pill pill-dec" data-t="rear">−</button>
+            <div class="temp-read" id="t_rear">${st.temp.rear.toFixed(1)} °C</div>
+            <button class="pill pill-inc" data-t="rear">＋</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gebläse -->
+      <div>
+        <div style="font-weight: 700; margin-bottom: 12px; font-size: 18px;">Gebläse</div>
+        
+        <div class="form-row-slider">
+          <label>Stärke</label>
+          <div class="fan-box">
+            <input id="fanRange" type="range" min="0" max="10" step="1" value="${st.fan.level}" class="assist-range">
+            <span id="fanVal" class="assist-range-value">${st.fan.level}</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Bereiche</label>
+          <div class="btn-group" id="airflowGroup">
+            <button class="seg ${st.fan.airflow.face?'on':''}" data-k="face">Gesicht</button>
+            <button class="seg ${st.fan.airflow.feet?'on':''}" data-k="feet">Füße</button>
+            <button class="seg ${st.fan.airflow.windshield?'on':''}" data-k="windshield">Scheibe</button>
+            <button class="seg ${st.fan.airflow.rear?'on':''}" data-k="rear">Hinten</button>
+          </div>
+        </div>
+      </div>
 
     </div>
   `;
 
-  // Section aktiv/inaktiv (dimmen & sperren)
-  function setSectionEnabled(id, enabled){
-    const sec = pad.querySelector(`.assist-item[data-id="${id}"]`);
-    const body = sec.querySelector(".assist-body");
-    body.classList.toggle("is-disabled", !enabled);
-    body.querySelectorAll("input, button, select").forEach(el=>{
-      if(el.closest(".switch")) return;               // Schalter bleiben aktiv
-      const manuallyDisabled = el.hasAttribute("disabled");
-      el.disabled = !enabled || manuallyDisabled;    // respektiert manuelles disabled (z.B. Sync beim Beifahrer)
+  // AC Button Handler
+  const acBtn = pad.querySelector("#acBtn");
+  if(acBtn) {
+    acBtn.addEventListener("click", ()=>{
+      const S = loadClimate();
+      S.fan.acOn = !S.fan.acOn;
+      saveClimate(S);
+      acBtn.textContent = S.fan.acOn ? "A/C Ein" : "A/C Aus";
+      if(S.fan.acOn) {
+        acBtn.classList.add("open");
+      } else {
+        acBtn.classList.remove("open");
+      }
     });
   }
-  setSectionEnabled("temp", st.temp.enabled);
-  setSectionEnabled("fan",  st.fan.enabled);
 
-  // Accordion
-  pad.querySelectorAll(".assist-item .assist-btn").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const sec = btn.closest(".assist-item");
-      const body = sec.querySelector(".assist-body");
-      const chev = btn.querySelector(".chevron");
-      const open = !body.hasAttribute("hidden");
-      if(open){ body.setAttribute("hidden",""); chev.textContent="▾"; }
-      else    { body.removeAttribute("hidden"); chev.textContent="▴"; }
-    });
-  });
-
-  // Sync vorn
-  const syncEl = pad.querySelector("#syncToggle");
-  if(syncEl){
-    syncEl.addEventListener("change", ()=>{
+  // Sync Button Handler
+  const syncBtn = pad.querySelector("#syncBtn");
+  if(syncBtn) {
+    syncBtn.addEventListener("click", ()=>{
       const S = loadClimate();
-      S.temp.sync = syncEl.checked;
-      if(S.temp.sync){ S.temp.passenger = S.temp.driver; S.temp.rear = S.temp.driver; }
+      S.temp.sync = !S.temp.sync;
+      if(S.temp.sync) { S.temp.passenger = S.temp.driver; S.temp.rear = S.temp.driver; }
       saveClimate(S);
+      syncBtn.textContent = S.temp.sync ? "Sync Ein" : "Sync Aus";
+      if(S.temp.sync) {
+        syncBtn.classList.add("open");
+      } else {
+        syncBtn.classList.remove("open");
+      }
       // Passenger & Rear sperren/freigeben
-      pad.querySelectorAll('[data-t="passenger"],[data-t="rear"]').forEach(b=> b.disabled = S.temp.sync);
+      pad.querySelectorAll('[data-t="passenger"], [data-t="rear"]').forEach(b=> b.disabled = S.temp.sync);
       pad.querySelector("#t_pass").textContent = `${S.temp.passenger.toFixed(1)} °C`;
       const rearEl = pad.querySelector("#t_rear"); if(rearEl) rearEl.textContent = `${S.temp.rear.toFixed(1)} °C`;
     });
+  }
+
+  // initial apply if sync is active by default
+  if(st.temp && st.temp.sync){
+    pad.querySelectorAll('[data-t="passenger"], [data-t="rear"]').forEach(b=> b.disabled = true);
+    pad.querySelector("#t_pass").textContent = `${st.temp.passenger.toFixed(1)} °C`;
+    const rearElInit = pad.querySelector("#t_rear"); if(rearElInit) rearElInit.textContent = `${st.temp.rear.toFixed(1)} °C`;
   }
 
   // Temperaturen (Driver/Passenger/Rear) +/- in 0.5 Schritten (16..28)
@@ -932,13 +943,13 @@ function renderClimate(){
       const who = btn.dataset.t; // driver | passenger | rear
       const inc = btn.classList.contains("pill-inc") ? 0.5 : -0.5;
 
-  if((who==="passenger" || who==="rear") && S.temp.sync) return; // gesperrt bei Sync (passenger+rear)
+      if(who==="passenger" && S.temp.sync) return; // gesperrt bei Sync (passenger)
 
       const keyMap = { driver:"driver", passenger:"passenger", rear:"rear" };
       const key = keyMap[who];
       S.temp[key] = clamp(Number((S.temp[key] + inc).toFixed(1)), 16.0, 28.0);
 
-  if(S.temp.sync && who==="driver"){ S.temp.passenger = S.temp.driver; S.temp.rear = S.temp.driver; }
+      if(S.temp.sync && who==="driver"){ S.temp.passenger = S.temp.driver; S.temp.rear = S.temp.driver; }
 
       saveClimate(S);
       pad.querySelector("#t_driver").textContent = `${S.temp.driver.toFixed(1)} °C`;
@@ -946,16 +957,6 @@ function renderClimate(){
       pad.querySelector("#t_rear").textContent   = `${S.temp.rear.toFixed(1)} °C`;
     });
   });
-
-  // A/C Toggle
-  const acT = pad.querySelector("#acToggle");
-  if(acT){
-    acT.addEventListener("change", ()=>{
-      const S = loadClimate();
-      S.fan.acOn = acT.checked;
-      saveClimate(S);
-    });
-  }
 
   // Gebläse + zweifarbige Spur
   const fan = pad.querySelector("#fanRange");
@@ -997,6 +998,114 @@ function renderInfo(){
   Die erfassten Daten werden ausschließlich zu Forschungszwecken verwendet und anonymisiert ausgewertet.</div></div>`;
 }
 
+function renderCar(){
+  const pad = document.getElementById("padArea");
+  const st = loadCar();
+  pad.innerHTML = `
+    <div class="assist-list" style="padding:12px; display:flex; flex-direction:column; gap:20px;">
+
+      <div>
+        <div style="font-weight:700; margin-bottom:8px; font-size:18px;">Fahrzeug-Steuerung</div>
+        <div class="form-row">
+          <label>Türverriegelung</label>
+          <div class="btn-group">
+            <button id="toggleLockBtn" class="lock-trunk-btn${st.locks.locked ? "" : " open"}">${st.locks.locked ? "Verriegelt" : "Entriegelt"}</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Kofferraum</label>
+          <div class="btn-group">
+            <button id="trunkBtn" class="lock-trunk-btn${st.locks.trunk ? " open" : ""}">${st.locks.trunk ? "Offen" : "Geschlossen"}</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Alarm</label>
+          <label class="switch"><input type="checkbox" id="alarmToggle" ${st.locks.alarm?"checked":""}><span class="slider-switch"></span></label>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-weight:700; margin-bottom:8px; font-size:18px;">Beleuchtung</div>
+        <div class="form-row">
+          <label>Scheinwerfer (Auto)</label>
+          <label class="switch"><input type="checkbox" id="headAuto" ${st.lights.headlightsAuto?"checked":""}><span class="slider-switch"></span></label>
+        </div>
+        <div class="form-row">
+          <label>Innenraum</label>
+          <label class="switch"><input type="checkbox" id="interiorToggle" ${st.lights.interior?"checked":""}><span class="slider-switch"></span></label>
+        </div>
+        <div class="form-row-slider">
+          <label>Innenraum Helligkeit</label>
+          <div class="fan-box"><input id="interiorLevel" type="range" min="0" max="100" value="${st.lights.interiorLevel}" class="assist-range"><span id="interiorLevelVal" class="assist-range-value">${st.lights.interiorLevel}%</span></div>
+        </div>
+      </div>
+
+    </div>
+  `;
+
+  // Accordion
+  pad.querySelectorAll(".assist-item .assist-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const sec = btn.closest(".assist-item");
+      const body = sec.querySelector(".assist-body");
+      const chev = btn.querySelector(".chevron");
+      const open = !body.hasAttribute("hidden");
+      if(open){ body.setAttribute("hidden","" ); chev.textContent="▾"; }
+      else    { body.removeAttribute("hidden"); chev.textContent="▴"; }
+    });
+  });
+
+  // Controls handlers
+  const toggleLockBtn = pad.querySelector('#toggleLockBtn');
+  const trunkBtn = pad.querySelector('#trunkBtn');
+  const alarmToggle = pad.querySelector('#alarmToggle');
+  if(toggleLockBtn){ 
+    toggleLockBtn.addEventListener('click', ()=>{ 
+      const S=loadCar(); 
+      S.locks.locked = !S.locks.locked; 
+      saveCar(S); 
+      toggleLockBtn.textContent = S.locks.locked ? "🔒 Verriegelt" : "🔓 Entriegelt";
+      if(S.locks.locked) {
+        toggleLockBtn.classList.remove('open');
+      } else {
+        toggleLockBtn.classList.add('open');
+      }
+      setTimeout(()=>{ 
+        const fresh = loadCar(); 
+        toggleLockBtn.textContent = fresh.locks.locked ? "🔒 Verriegelt" : "🔓 Entriegelt";
+        if(fresh.locks.locked) {
+          toggleLockBtn.classList.remove('open');
+        } else {
+          toggleLockBtn.classList.add('open');
+        }
+      }, 1200); 
+    }); 
+  }
+  if(trunkBtn){ 
+    trunkBtn.addEventListener('click', ()=>{ 
+      const S=loadCar(); 
+      S.locks.trunk = !S.locks.trunk; 
+      saveCar(S); 
+      trunkBtn.textContent = S.locks.trunk ? "Offen" : "Geschlossen";
+      if(S.locks.trunk) {
+        trunkBtn.classList.add('open');
+      } else {
+        trunkBtn.classList.remove('open');
+      }
+    }); 
+  }
+  if(alarmToggle){ alarmToggle.addEventListener('change', ()=>{ const S=loadCar(); S.locks.alarm = alarmToggle.checked; saveCar(S); }); }
+
+  // Lights handlers
+  const headAuto = pad.querySelector('#headAuto');
+  const interiorToggle = pad.querySelector('#interiorToggle');
+  const interiorLevel = pad.querySelector('#interiorLevel');
+  const interiorLevelVal = pad.querySelector('#interiorLevelVal');
+  if(headAuto){ headAuto.addEventListener('change', ()=>{ const S=loadCar(); S.lights.headlightsAuto = headAuto.checked; saveCar(S); }); }
+  if(interiorToggle){ interiorToggle.addEventListener('change', ()=>{ const S=loadCar(); S.lights.interior = interiorToggle.checked; saveCar(S); }); }
+  if(interiorLevel){ interiorLevel.addEventListener('input', ()=>{ interiorLevelVal.textContent = interiorLevel.value + '%'; const S=loadCar(); S.lights.interiorLevel = Number(interiorLevel.value); saveCar(S); }); }
+}
+
 function renderSeats(){
   const pad = document.getElementById("padArea");
   const st  = loadSeats();
@@ -1027,7 +1136,7 @@ function renderSeats(){
             <label>Sitzbelüftung</label>
             <div class="temp-box">
               <button class="pill pill-dec" data-t="driver-vent">−</button>
-              <div class="temp-read" id="driverVentVal">${["Aus", "Mittel", "Hoch"][st.driver.ventilation]}</div>
+              <div class="temp-read" id="driverVentVal">${["Aus", "Niedrig", "Mittel", "Hoch"][st.driver.ventilation]}</div>
               <button class="pill pill-inc" data-t="driver-vent">＋</button>
             </div>
           </div>
@@ -1040,23 +1149,15 @@ function renderSeats(){
             </div>
           </div>
 
-          <div class="form-row">
+          <div class="form-row-slider">
             <label>Massage</label>
-            <div style="display:flex; align-items:center; gap:12px;">
-              <input id="driverMassageStrength" type="range" min="0" max="5" step="1" value="${st.driver.massage.strength}" class="assist-range" style="flex:1">
+            <div class="fan-box">
+              <input id="driverMassageStrength" type="range" min="0" max="5" step="1" value="${st.driver.massage.strength}" class="assist-range">
               <span id="driverMassageVal" class="assist-range-value">${st.driver.massage.strength}</span>
             </div>
           </div>
 
-          <div class="form-row">
-            <label>Position</label>
-            <div class="btn-group" id="driverPosGroup">
-              <button class="seg" data-pos="up" title="Höhe +">↑</button>
-              <button class="seg" data-pos="down" title="Höhe -">↓</button>
-              <button class="seg" data-pos="forward" title="Vorwärts">→</button>
-              <button class="seg" data-pos="back" title="Rückwärts">←</button>
-            </div>
-          </div>
+          
 
         </div>
       </section>
@@ -1084,7 +1185,7 @@ function renderSeats(){
             <label>Sitzbelüftung</label>
             <div class="temp-box">
               <button class="pill pill-dec" data-t="passenger-vent">−</button>
-              <div class="temp-read" id="passengerVentVal">${["Aus", "Mittel", "Hoch"][st.passenger.ventilation]}</div>
+              <div class="temp-read" id="passengerVentVal">${["Aus", "Niedrig", "Mittel", "Hoch"][st.passenger.ventilation]}</div>
               <button class="pill pill-inc" data-t="passenger-vent">＋</button>
             </div>
           </div>
@@ -1097,23 +1198,15 @@ function renderSeats(){
             </div>
           </div>
 
-          <div class="form-row">
+          <div class="form-row-slider">
             <label>Massage</label>
-            <div style="display:flex; align-items:center; gap:12px;">
-              <input id="passengerMassageStrength" type="range" min="0" max="5" step="1" value="${st.passenger.massage.strength}" class="assist-range" style="flex:1">
+            <div class="fan-box">
+              <input id="passengerMassageStrength" type="range" min="0" max="5" step="1" value="${st.passenger.massage.strength}" class="assist-range">
               <span id="passengerMassageVal" class="assist-range-value">${st.passenger.massage.strength}</span>
             </div>
           </div>
 
-          <div class="form-row">
-            <label>Position</label>
-            <div class="btn-group" id="passengerPosGroup">
-              <button class="seg" data-pos="up" title="Höhe +">↑</button>
-              <button class="seg" data-pos="down" title="Höhe -">↓</button>
-              <button class="seg" data-pos="forward" title="Vorwärts">→</button>
-              <button class="seg" data-pos="back" title="Rückwärts">←</button>
-            </div>
-          </div>
+          
 
         </div>
       </section>
@@ -1219,38 +1312,141 @@ function renderSeats(){
     }
   });
 
-  // Position Buttons
-  ["driver", "passenger"].forEach(seatId => {
-    const group = pad.querySelector(`#${seatId}PosGroup`);
-    if(group) {
-      group.querySelectorAll("button").forEach(btn => {
-        btn.addEventListener("click", ()=>{
-          const S = loadSeats();
-          const pos = btn.dataset.pos;
-          switch(pos) {
-            case "up":
-              S[seatId].position.height = clamp(S[seatId].position.height + 1, 0, 10);
-              break;
-            case "down":
-              S[seatId].position.height = clamp(S[seatId].position.height - 1, 0, 10);
-              break;
-            case "forward":
-              S[seatId].position.reach = clamp(S[seatId].position.reach + 1, 0, 10);
-              break;
-            case "back":
-              S[seatId].position.reach = clamp(S[seatId].position.reach - 1, 0, 10);
-              break;
-          }
-          saveSeats(S);
-        });
-      });
-    }
+  // Position buttons removed
+}
+
+function renderDriveMode(){
+  const pad = document.getElementById("padArea");
+  const st = loadDriveMode();
+  
+  pad.innerHTML = `
+    <div class="assist-list">
+
+      <!-- Fahrprofile direkt angezeigt -->
+      <div style="padding: 12px; display: flex; flex-direction: column; gap: 30px;">
+        <div class="form-row">
+          <label>Fahrprofil</label>
+          <div class="btn-group" id="profileBtns">
+            <button class="seg ${st.profile==="Eco"?"on":""}" data-profile="Eco">Eco</button>
+            <button class="seg ${st.profile==="Comfort"?"on":""}" data-profile="Comfort">Comfort</button>
+            <button class="seg ${st.profile==="Sport"?"on":""}" data-profile="Sport">Sport</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Adaptive Federung</label>
+          <div class="btn-group" id="suspensionBtns">
+            <button class="seg ${st.adaptiveSuspension==="Komfort"?"on":""}" data-suspension="Komfort">Komfort</button>
+            <button class="seg ${st.adaptiveSuspension==="Ausgewogen"?"on":""}" data-suspension="Ausgewogen">Ausgewogen</button>
+            <button class="seg ${st.adaptiveSuspension==="Sport"?"on":""}" data-suspension="Sport">Sport</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Lenkunterstützung</label>
+          <div class="btn-group" id="steeringBtns">
+            <button class="seg ${st.steeringAssistance==="Leicht"?"on":""}" data-steering="Leicht">Leicht</button>
+            <button class="seg ${st.steeringAssistance==="Normal"?"on":""}" data-steering="Normal">Normal</button>
+            <button class="seg ${st.steeringAssistance==="Sportlich"?"on":""}" data-steering="Sportlich">Sportlich</button>
+          </div>
+        </div>
+
+        <div class="form-row-slider">
+          <label>Rekuperationsstärke</label>
+          <div class="fan-box"><input id="regenerativeBraking" type="range" min="0" max="100" value="${st.regenerativeBraking}" class="assist-range"><span id="regenerativeBrakingVal" class="assist-range-value">${st.regenerativeBraking}%</span></div>
+        </div>
+      </div>
+
+    </div>
+  `;
+
+  // Profile buttons
+  pad.querySelectorAll("#profileBtns .seg").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const profile = btn.dataset.profile;
+      const S = loadDriveMode();
+      S.profile = profile;
+      saveDriveMode(S);
+      pad.querySelectorAll("#profileBtns .seg").forEach(b => b.classList.remove("on"));
+      btn.classList.add("on");
+    });
   });
+
+  // Suspension buttons
+  pad.querySelectorAll("#suspensionBtns .seg").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const suspension = btn.dataset.suspension;
+      const S = loadDriveMode();
+      S.adaptiveSuspension = suspension;
+      saveDriveMode(S);
+      pad.querySelectorAll("#suspensionBtns .seg").forEach(b => b.classList.remove("on"));
+      btn.classList.add("on");
+    });
+  });
+
+  // Steering buttons
+  pad.querySelectorAll("#steeringBtns .seg").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const steering = btn.dataset.steering;
+      const S = loadDriveMode();
+      S.steeringAssistance = steering;
+      saveDriveMode(S);
+      pad.querySelectorAll("#steeringBtns .seg").forEach(b => b.classList.remove("on"));
+      btn.classList.add("on");
+    });
+  });
+
+  // Regenerative Braking Slider
+  const regenerativeBraking = pad.querySelector("#regenerativeBraking");
+  const regenerativeBrakingVal = pad.querySelector("#regenerativeBrakingVal");
+  if(regenerativeBraking) {
+    regenerativeBraking.addEventListener("input", ()=>{
+      const val = parseInt(regenerativeBraking.value);
+      regenerativeBrakingVal.textContent = val + "%";
+      const S = loadDriveMode();
+      S.regenerativeBraking = val;
+      saveDriveMode(S);
+    });
+  }
 }
 
 function renderUser(){
   const pad=document.getElementById("padArea");
-  pad.innerHTML = `<div style="display:grid; place-items:center; height:100%;"><div>Fahrzeug-Infos (Dummy)</div></div>`;
+  // simple persistent active user key
+  const ACTIVE_USER_KEY = 'active_user_v1';
+  const active = localStorage.getItem(ACTIVE_USER_KEY) || null;
+  // generate a long list of users
+  const users = [
+    'Alex Müller','Ben König','Carla Schmidt','David Bauer','Eva Neumann','Fabian Weber','Greta Hoffmann','Hannah Klein','Ian Schröder','Julia Lange',
+    'Karl Fischer','Laura Braun','Mia Vogel','Nico Wolf','Olivia Frank','Peter Lang','Quentin Mayer','Rita Busch','Simon Roth','Tina Berg',
+    'Uwe König','Vera Brandt','Willi Kern','Xenia Jansen','Yannick Otto','Zoe Richter','Anna Schwarz','Björn Koch','Celine Matheis','Darius Mester'
+  ];
+
+  pad.innerHTML = `
+    <div style="padding:12px; height:100%; display:flex; flex-direction:column; gap:12px;">
+      <div style="font-weight:700; font-size:18px;">Nutzer</div>
+      <div style="flex:1; overflow:auto; border-top:1px solid var(--secondarycolor); padding-top:8px;">
+        ${users.map(u=>`
+          <div class="row-item" data-user="${u}" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>${u}</div>
+            <button class="seg ${u===active? 'on' : '' }" data-user="${u}">${u===active? 'Aktiv' : 'Wählen'}</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  // handlers: clicking a button marks user active and persists
+  pad.querySelectorAll('.row-item .seg').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const user = btn.dataset.user;
+      localStorage.setItem(ACTIVE_USER_KEY, user);
+      // update buttons
+      pad.querySelectorAll('.row-item .seg').forEach(b=>{ b.classList.remove('on'); b.textContent = 'Wählen'; });
+      btn.classList.add('on');
+      btn.textContent = 'Aktiv';
+    });
+  });
 }
 
 /* ===== Start mit Kacheln ===== */
