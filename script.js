@@ -689,7 +689,7 @@ function applyAssistFormToState(body, target){
   });
 }
 function renderMusic(){
-  const pad=document.getElementById("padArea"), footer=document.getElementById("footer");
+  const pad=document.getElementById("padArea");
   
   // Music state (persisted in localStorage)
   const MUSIC_KEY = 'music_player_v1';
@@ -721,17 +721,22 @@ function renderMusic(){
   let musicState = loadMusicState();
   
   pad.innerHTML = `
-    <div class="pad-toolbar"><button id="openPlaylist">Playlist</button><button id="openNowPlaying">Now Playing</button></div>
+    <div class="pad-toolbar" style="gap:8px;">
+      <button id="prevBtn" class="pill" style="width:50px;">⏮︎</button>
+      <button id="playPauseBtn" class="pill" style="width:50px;">${musicState.isPlaying ? '⏸︎' : '⏯︎'}</button>
+      <button id="nextBtn" class="pill" style="width:50px;">⏭︎</button>
+      <div style="flex:1;"></div>
+      <button id="openPlaylist">Playlist</button>
+      <button id="openNowPlaying">Now Playing</button>
+    </div>
     <div class="pad-content" id="musicBody"></div>
   `;
   
-  // Update footer controls
-  function updateFooter(){
-    const playBtn = footer.querySelector('#playPauseBtn');
+  // Update play/pause button
+  function updatePlayButton(){
+    const playBtn = document.getElementById('playPauseBtn');
     if(playBtn) playBtn.textContent = musicState.isPlaying ? '⏸︎' : '⏯︎';
   }
-  
-  footer.innerHTML = `<button id="prevBtn">⏮︎</button><button id="playPauseBtn">${musicState.isPlaying ? '⏸︎' : '⏯︎'}</button><button id="nextBtn">⏭︎</button>`;
   
   // Previous track
   document.getElementById("prevBtn").onclick = ()=>{
@@ -745,7 +750,7 @@ function renderMusic(){
   document.getElementById("playPauseBtn").onclick = ()=>{
     musicState.isPlaying = !musicState.isPlaying;
     saveMusicState(musicState);
-    updateFooter();
+    updatePlayButton();
   };
   
   // Next track
@@ -777,7 +782,7 @@ function renderMusic(){
       musicState.progressSec = 0;
       musicState.isPlaying = true;
       saveMusicState(musicState);
-      updateFooter();
+      updatePlayButton();
       showNowPlaying();
     });
     
