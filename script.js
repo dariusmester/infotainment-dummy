@@ -725,7 +725,7 @@ function renderMusic(){
       <div class="pad-toolbar" style="gap:8px; flex-shrink:0;">
         <button id="openPlaylist">Playlist</button>
       </div>
-      <div class="pad-content" id="musicBody" style="position:static; inset:auto; flex:1; overflow:hidden;"></div>
+  <div class="pad-content" id="musicBody" style="position:relative; inset:auto; flex:1; overflow:hidden;"></div>
       <div id="musicFooter" style="display:flex; gap:12px; padding:16px; border-top:1px solid #3a4245; flex-shrink:0; align-items:center;">
         <div id="currentSongInfo" style="flex:1; font-size:14px; min-width:0;">
           <div id="songTitle" style="font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Midnight Echo</div>
