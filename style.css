@@ -11,6 +11,17 @@ body { background:#000000; color:#e8f3ff; font-family:system-ui,-apple-system,Se
 #topbar-right { display:flex; gap:8px; align-items:center; }
 #topbar button { background:#08a0f7; color:#00131c; border:none; border-radius:10px; padding:6px 10px; font-weight:700; cursor:pointer; }
 #topbar button:hover { filter:brightness(1.05); }
+.nav-search{
+  background: var(--primarycolor); /* match other grey controls */
+  color: #e8f3ff;
+  border: 1px solid var(--secondarycolor);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 18px;
+  width: max-content;
+  height: 50px;
+}
+.nav-search::placeholder{ color: #9fb0bf; }
 .muted { opacity:.7; font-size:12px; }
 
 /* Layout */
@@ -47,7 +58,7 @@ body { background:#000000; color:#e8f3ff; font-family:system-ui,-apple-system,Se
 .pad-toolbar, .pad-footer { display:flex; gap:8px; align-items:center; padding:8px 10px; }
 .pad-toolbar { border-bottom:1px solid #505353; font-size: 30px;}
 .pad-toolbar button { background:#232525; color:#e8f3ff; border:1px solid #505353; border-radius:10px; padding:6px 10px; cursor:pointer; font-weight: bold; height:50px; width:150px; font-size: 30px;}
-.pad-toolbar input[type="text"] { flex:1; min-width:120px; padding:6px 10px; border-radius:8px; border:1px solid #2a5875; background:#0e2030; color:#e8f3ff; }
+.pad-toolbar input[type="text"] { flex:1; min-width:120px; padding:6px 10px; border-radius:8px;}
 .pad-content { position:absolute; inset:65px 0 0 0; }
 
 

@@ -727,18 +727,55 @@ function renderMusic(){
 function renderNav(){
   const pad=document.getElementById("padArea");
   pad.innerHTML = `
-    <div class="pad-toolbar"><input id="navSearch" type="text" placeholder="Ziel eingeben…"><button id="navGo">Suchen</button></div>
-    <div class="pad-content">
-      <div id="map" class="map"><div class="pin" style="left:50%; top:50%"></div></div>
+    <div class="pad-toolbar" style="align-items:center; gap:12px;">
+      <input id="navSearch" class="nav-search" type="text" placeholder="Ziel eingeben…">
+      <button id="navGo">Suchen</button>
+    </div>
+    <div class="pad-content" style="display:flex; flex-direction:column; gap:8px;">
+      <div style="height:100%; min-height:360px;">
+        <!-- Default location: Göttingen -->
+        <iframe id="navMapIframe" src="https://www.openstreetmap.org/export/embed.html?bbox=9.8858,51.5213,9.9458,51.5613&layer=mapnik&marker=51.5413,9.9158" style="width:100%; height:100%; border:0; border-radius:8px;"></iframe>
+      </div>
       <div id="suggest" class="suggest" hidden><div class="inner"></div></div>
     </div>`;
-  const suggest=pad.querySelector("#suggest"), inner=suggest.querySelector(".inner"), map=pad.querySelector("#map");
-  document.getElementById("navGo").onclick = ()=>{
-    suggest.hidden=false; inner.innerHTML=`<div class="row-item">Lade Vorschläge…</div>`;
-    setTimeout(()=>{ inner.innerHTML=["Hbf","Alexanderplatz","Potsdamer Platz","Brandenburger Tor","Mitte"].map(t=>`<div class="row-item">${t}</div>`).join(""); }, 400);
-  };
-  inner.addEventListener("click", ()=>{ suggest.hidden=true; });
-  makeMapPan(map);
+  const suggest=pad.querySelector("#suggest"), inner=suggest.querySelector(".inner");
+  const searchInput = document.getElementById('navSearch');
+  const navGo = document.getElementById('navGo');
+  const mapIframe = document.getElementById('navMapIframe');
+
+  async function doSearch(q){
+    if(!q) return;
+    suggest.hidden = false;
+    inner.innerHTML = `<div class="row-item">Lade Vorschläge…</div>`;
+    try{
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=6&addressdetails=1&q=${encodeURIComponent(q)}`;
+      const res = await fetch(url, { headers:{ 'Accept-Language':'de' } });
+      const json = await res.json();
+      if(!json || !json.length){ inner.innerHTML = `<div class="row-item muted">Keine Ergebnisse</div>`; return; }
+      inner.innerHTML = json.map(item=>{
+        const display = (item.display_name || `${item.lat},${item.lon}`).replace(/, Germany.*/,'');
+        return `<div class="row-item" data-lat="${item.lat}" data-lon="${item.lon}">${display}</div>`;
+      }).join('');
+    }catch(e){ inner.innerHTML = `<div class="row-item muted">Fehler beim Suchen</div>`; }
+  }
+
+  navGo.addEventListener('click', ()=> doSearch(searchInput.value.trim()));
+  // Enter in input triggers search
+  searchInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); doSearch(searchInput.value.trim()); } });
+
+  // clicking a suggestion recenters the iframe map
+  inner.addEventListener('click', (ev)=>{
+    const row = ev.target.closest('.row-item'); if(!row) return;
+    const lat = Number(row.dataset.lat), lon = Number(row.dataset.lon);
+    if(!lat||!lon) return;
+    // small bbox around chosen point
+    const delta = 0.02; // ~2km box
+    const minLon = (lon - delta).toFixed(6), minLat = (lat - delta).toFixed(6), maxLon = (lon + delta).toFixed(6), maxLat = (lat + delta).toFixed(6);
+    const src = `https://www.openstreetmap.org/export/embed.html?bbox=${minLon},${minLat},${maxLon},${maxLat}&layer=mapnik&marker=${lat},${lon}`;
+    mapIframe.src = src;
+    suggest.hidden = true;
+  });
+  // Using embedded OpenStreetMap iframe; no custom pan helper required.
 }
 
 function renderPhone(){
@@ -1451,3 +1488,18 @@ function renderUser(){
 
 /* ===== Start mit Kacheln ===== */
 renderHome();
+
+// Clock updater for the topbar
+function startClock(){
+  const el = document.getElementById('clock');
+  if(!el) return;
+  function tick(){
+    const now = new Date();
+    // format HH:MM
+    const opts = { hour: '2-digit', minute: '2-digit', hour12: false };
+    el.textContent = now.toLocaleTimeString('de-DE', opts);
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+startClock();
