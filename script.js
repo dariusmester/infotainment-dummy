@@ -721,17 +721,17 @@ function renderMusic(){
   let musicState = loadMusicState();
   
   pad.innerHTML = `
-    <div style="display:flex; flex-direction:column; height:100%; gap:0;">
-      <div class="pad-toolbar" style="gap:8px;">
+    <div id="musicWrapper" style="position:absolute; inset:0; display:flex; flex-direction:column; gap:0;">
+      <div class="pad-toolbar" style="gap:8px; flex-shrink:0;">
         <button id="openPlaylist">Playlist</button>
       </div>
-      <div class="pad-content" id="musicBody" style="flex:1; position:relative; overflow:hidden;"></div>
-      <div id="musicFooter" style="display:flex; flex-direction:column; gap:12px; padding:16px; border-top:1px solid #3a4245; flex-shrink:0;">
-        <div id="currentSongInfo" style="text-align:center; font-size:14px;">
-          <div id="songTitle" style="font-weight:bold;">Midnight Echo</div>
-          <div id="songArtist" style="color:#9fb0bf; font-size:12px; margin-top:4px;">Lunar Waves</div>
+      <div class="pad-content" id="musicBody" style="position:static; inset:auto; flex:1; overflow:hidden;"></div>
+      <div id="musicFooter" style="display:flex; gap:12px; padding:16px; border-top:1px solid #3a4245; flex-shrink:0; align-items:center;">
+        <div id="currentSongInfo" style="flex:1; font-size:14px; min-width:0;">
+          <div id="songTitle" style="font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Midnight Echo</div>
+          <div id="songArtist" style="color:#9fb0bf; font-size:12px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Lunar Waves</div>
         </div>
-        <div style="display:flex; gap:8px; justify-content:center; align-items:center;">
+        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
           <button id="prevBtn" class="pill" style="width:50px;">⏮︎</button>
           <button id="playPauseBtn" class="pill" style="width:50px;">${musicState.isPlaying ? '⏸︎' : '⏯︎'}</button>
           <button id="nextBtn" class="pill" style="width:50px;">⏭︎</button>
