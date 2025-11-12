@@ -721,21 +721,35 @@ function renderMusic(){
   let musicState = loadMusicState();
   
   pad.innerHTML = `
-    <div class="pad-toolbar" style="gap:8px;">
-      <button id="prevBtn" class="pill" style="width:50px;">⏮︎</button>
-      <button id="playPauseBtn" class="pill" style="width:50px;">${musicState.isPlaying ? '⏸︎' : '⏯︎'}</button>
-      <button id="nextBtn" class="pill" style="width:50px;">⏭︎</button>
-      <div style="flex:1;"></div>
-      <button id="openPlaylist">Playlist</button>
-      <button id="openNowPlaying">Now Playing</button>
+    <div style="display:flex; flex-direction:column; height:100%; gap:0;">
+      <div class="pad-toolbar" style="gap:8px;">
+        <button id="openPlaylist">Playlist</button>
+      </div>
+      <div class="pad-content" id="musicBody" style="flex:1; position:relative; overflow:hidden;"></div>
+      <div id="musicFooter" style="display:flex; flex-direction:column; gap:12px; padding:16px; border-top:1px solid #3a4245; flex-shrink:0;">
+        <div id="currentSongInfo" style="text-align:center; font-size:14px;">
+          <div id="songTitle" style="font-weight:bold;">Midnight Echo</div>
+          <div id="songArtist" style="color:#9fb0bf; font-size:12px; margin-top:4px;">Lunar Waves</div>
+        </div>
+        <div style="display:flex; gap:8px; justify-content:center; align-items:center;">
+          <button id="prevBtn" class="pill" style="width:50px;">⏮︎</button>
+          <button id="playPauseBtn" class="pill" style="width:50px;">${musicState.isPlaying ? '⏸︎' : '⏯︎'}</button>
+          <button id="nextBtn" class="pill" style="width:50px;">⏭︎</button>
+        </div>
+      </div>
     </div>
-    <div class="pad-content" id="musicBody"></div>
   `;
   
-  // Update play/pause button
+  // Update play/pause button and song info
   function updatePlayButton(){
     const playBtn = document.getElementById('playPauseBtn');
     if(playBtn) playBtn.textContent = musicState.isPlaying ? '⏸︎' : '⏯︎';
+  }
+  
+  function updateSongInfo(){
+    const song = songs[musicState.currentTrackIdx];
+    document.getElementById('songTitle').textContent = song.title;
+    document.getElementById('songArtist').textContent = song.artist;
   }
   
   // Previous track
@@ -743,7 +757,7 @@ function renderMusic(){
     musicState.currentTrackIdx = (musicState.currentTrackIdx - 1 + songs.length) % songs.length;
     musicState.progressSec = 0;
     saveMusicState(musicState);
-    showNowPlaying();
+    updateSongInfo();
   };
   
   // Play/Pause
@@ -758,7 +772,7 @@ function renderMusic(){
     musicState.currentTrackIdx = (musicState.currentTrackIdx + 1) % songs.length;
     musicState.progressSec = 0;
     saveMusicState(musicState);
-    showNowPlaying();
+    updateSongInfo();
   };
   
   function showPlaylist(){
@@ -783,64 +797,16 @@ function renderMusic(){
       musicState.isPlaying = true;
       saveMusicState(musicState);
       updatePlayButton();
-      showNowPlaying();
+      updateSongInfo();
     });
     
     makeInertiaScroll(list);
   }
   
-  function showNowPlaying(){
-    const body = document.getElementById("musicBody");
-    const song = songs[musicState.currentTrackIdx];
-    const totalSec = song.duration * 60;
-    const minElapsed = Math.floor(musicState.progressSec / 60);
-    const secElapsed = Math.floor(musicState.progressSec % 60);
-    const minTotal = Math.floor(totalSec / 60);
-    const secTotal = Math.floor(totalSec % 60);
-    
-    body.innerHTML = `
-      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:24px; padding:20px;">
-        <div style="font-size:64px;">🎵</div>
-        <div style="text-align:center;">
-          <div style="font-size:24px; font-weight:bold;">${song.title}</div>
-          <div style="font-size:16px; color:#9fb0bf; margin-top:6px;">${song.artist}</div>
-        </div>
-        <div class="slider" style="width:100%; max-width:300px;">
-          <div class="track"><div class="thumb" id="scrub" style="left:${(musicState.progressSec / totalSec) * 100}%"></div></div>
-        </div>
-        <div style="display:flex; gap:12px; font-size:12px; color:#9fb0bf;">
-          <span>${minElapsed.toString().padStart(2,'0')}:${secElapsed.toString().padStart(2,'0')}</span>
-          <span>/</span>
-          <span>${minTotal.toString().padStart(2,'0')}:${secTotal.toString().padStart(2,'0')}</span>
-        </div>
-      </div>
-    `;
-    
-    const track = body.querySelector(".track"), thumb = body.querySelector("#scrub");
-    if(track && thumb){
-      track.addEventListener("pointerdown", e => {
-        track.setPointerCapture(e.pointerId);
-        function move(ev){
-          const r = track.getBoundingClientRect();
-          const pct = Math.max(0, Math.min(100, ((ev.clientX - r.left) / r.width) * 100));
-          thumb.style.left = pct + "%";
-          musicState.progressSec = (pct / 100) * totalSec;
-          saveMusicState(musicState);
-        }
-        function up(){
-          track.removeEventListener("pointermove", move);
-          track.removeEventListener("pointerup", up);
-        }
-        track.addEventListener("pointermove", move);
-        track.addEventListener("pointerup", up, {once: true});
-      });
-    }
-  }
-  
   document.getElementById("openPlaylist").onclick = showPlaylist;
-  document.getElementById("openNowPlaying").onclick = showNowPlaying;
   
-  // Show playlist by default
+  // Initialize with current song info and show playlist
+  updateSongInfo();
   showPlaylist();
 }
 
