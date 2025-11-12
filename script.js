@@ -723,7 +723,7 @@ function renderMusic(){
   pad.innerHTML = `
     <div id="musicWrapper" style="position:absolute; inset:0; display:flex; flex-direction:column; gap:0;">
       <div class="pad-toolbar" style="gap:8px; flex-shrink:0;">
-        <button id="openPlaylist">Playlist</button>
+        <button id="openPlaylist"> Meine Playlist</button>
       </div>
   <div class="pad-content" id="musicBody" style="position:relative; inset:auto; flex:1; overflow:hidden;"></div>
       <div id="musicFooter" style="display:flex; gap:12px; padding:16px; border-top:1px solid #3a4245; flex-shrink:0; align-items:center;">
@@ -901,30 +901,110 @@ function renderMessage(){
 
 function renderSettings(){
   const pad=document.getElementById("padArea");
+
+  const SETTINGS_KEY = 'settings_v1';
+  const DEFAULTS = { brightness:50, theme:'dark', volume:50, muted:false, language:'de', units:'C' };
+  function loadSettings(){ try{ const raw=localStorage.getItem(SETTINGS_KEY); return raw?JSON.parse(raw):JSON.parse(JSON.stringify(DEFAULTS)); }catch{return JSON.parse(JSON.stringify(DEFAULTS));} }
+  function saveSettings(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+
+  let s = loadSettings();
+
   pad.innerHTML = `
-    <div class="pad-toolbar"><button id="openPanel">Display & Sound</button></div>
+    <div class="pad-toolbar"><button id="openPanel">Einstellungen</button></div>
     <div class="pad-content" id="setBody"></div>`;
-  document.getElementById("openPanel").onclick = ()=>{
-    document.getElementById("setBody").innerHTML=`
-      <div class="slider" style="margin:16px;">
-        <span class="muted">Helligkeit</span>
-        <div class="track"><div class="thumb" id="brightThumb" style="left:50%"></div></div>
-        <span id="brightVal">50%</span>
+
+  function renderPanel(){
+    document.getElementById("setBody").innerHTML = `
+      <div class="assist-list" style="padding:12px; display:flex; flex-direction:column; gap:20px;">
+
+        <div>
+          <div style="font-weight:700; margin-bottom:8px; font-size:18px;">Display</div>
+          <div class="form-row">
+            <label>Helligkeit</label>
+            <div style="display:flex; align-items:center; gap:12px; width:100%;">
+              <div style="flex:1;">
+                <div class="slider"><div class="track" id="brightTrack"><div class="thumb" id="brightThumb" style="left:${s.brightness}%"></div></div></div>
+              </div>
+              <div style="width:56px; text-align:right; color:#9fb0bf;"><span id="brightVal">${s.brightness}%</span></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>Theme</label>
+            <div style="display:flex; gap:8px;"><button id="themeDark" class="seg ${s.theme==='dark'?'on':''}">Dunkel</button><button id="themeLight" class="seg ${s.theme==='light'?'on':''}">Hell</button></div>
+          </div>
+          <div class="form-row">
+            <label>Auto-Helligkeit</label>
+            <label class="switch"><input type="checkbox" id="autoBright"><span class="slider-switch"></span></label>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-weight:700; margin-bottom:8px; font-size:18px;">Sound</div>
+          <div class="form-row">
+            <label>Lautstärke</label>
+            <div class="fan-box" style="flex:1; align-items:center;"><div class="track" id="volTrack" style="flex:1"><div class="thumb" id="volThumb" style="left:${s.volume}%"></div></div><div style="width:48px; text-align:right; color:#9fb0bf;"><span id="volVal">${s.volume}%</span></div></div>
+          </div>
+          <div class="form-row">
+            <label>Stummschalten</label>
+            <label class="switch"><input type="checkbox" id="mutedChk" ${s.muted?'checked':''}><span class="slider-switch"></span></label>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-weight:700; margin-bottom:8px; font-size:18px;">Allgemein</div>
+          <div class="form-row">
+            <label>Sprache</label>
+            <select id="langSel"><option value="de">Deutsch</option><option value="en">English</option></select>
+          </div>
+          <div class="form-row">
+            <label>Einheiten</label>
+            <div style="display:flex; gap:8px;"><button id="unitC" class="seg ${s.units==='C'?'on':''}">°C</button><button id="unitF" class="seg ${s.units==='F'?'on':''}">°F</button></div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; padding:8px 12px;">
+          <button id="saveSettings" class="pill">Speichern</button>
+          <button id="resetSettings" class="pill">Auf Standard</button>
+        </div>
+
       </div>
-      <div style="display:flex; gap:8px; padding:0 16px 12px;">
-        <button id="dec">−</button><button id="inc">＋</button>
-      </div>`;
-    const track=document.querySelector(".track"), thumb=document.getElementById("brightThumb"), val=document.getElementById("brightVal"); let pct=50;
-    function setPct(p){ pct=Math.max(0,Math.min(100,p)); thumb.style.left=pct+"%"; val.textContent=pct+"%"; }
-    track.addEventListener("pointerdown", e=>{
-      track.setPointerCapture(e.pointerId);
-      function move(ev){ const r=track.getBoundingClientRect(); setPct(((ev.clientX-r.left)/r.width)*100); }
-      function up(){ track.removeEventListener("pointermove", move); track.removeEventListener("pointerup", up); }
-      track.addEventListener("pointermove", move); track.addEventListener("pointerup", up, {once:true});
-    });
-    document.getElementById("dec").onclick=()=>setPct(pct-5);
-    document.getElementById("inc").onclick=()=>setPct(pct+5);
-  };
+    `;
+
+    // populate selects
+    document.getElementById('langSel').value = s.language;
+
+    // Brightness slider
+    const brightTrack = document.getElementById('brightTrack'), brightThumb = document.getElementById('brightThumb'), brightVal = document.getElementById('brightVal');
+    function setBright(p){ s.brightness = Math.round(Math.max(0, Math.min(100, p))); brightThumb.style.left = s.brightness + '%'; brightVal.textContent = s.brightness + '%'; }
+    brightTrack.addEventListener('pointerdown', e=>{ brightTrack.setPointerCapture(e.pointerId); function mv(ev){ const r=brightTrack.getBoundingClientRect(); setBright(((ev.clientX-r.left)/r.width)*100); } function up(){ brightTrack.removeEventListener('pointermove', mv); brightTrack.removeEventListener('pointerup', up); } brightTrack.addEventListener('pointermove', mv); brightTrack.addEventListener('pointerup', up, {once:true}); });
+
+    // Volume slider
+    const volTrack = document.getElementById('volTrack'), volThumb = document.getElementById('volThumb'), volVal = document.getElementById('volVal');
+    function setVol(p){ s.volume = Math.round(Math.max(0, Math.min(100, p))); volThumb.style.left = s.volume + '%'; volVal.textContent = s.volume + '%'; }
+    volTrack.addEventListener('pointerdown', e=>{ volTrack.setPointerCapture(e.pointerId); function mv(ev){ const r=volTrack.getBoundingClientRect(); setVol(((ev.clientX-r.left)/r.width)*100); } function up(){ volTrack.removeEventListener('pointermove', mv); volTrack.removeEventListener('pointerup', up); } volTrack.addEventListener('pointermove', mv); volTrack.addEventListener('pointerup', up, {once:true}); });
+
+    // Theme buttons
+    document.getElementById('themeDark').onclick = ()=>{ s.theme='dark'; document.getElementById('themeDark').classList.add('on'); document.getElementById('themeLight').classList.remove('on'); };
+    document.getElementById('themeLight').onclick = ()=>{ s.theme='light'; document.getElementById('themeLight').classList.add('on'); document.getElementById('themeDark').classList.remove('on'); };
+
+    // Units
+    document.getElementById('unitC').onclick = ()=>{ s.units='C'; document.getElementById('unitC').classList.add('on'); document.getElementById('unitF').classList.remove('on'); };
+    document.getElementById('unitF').onclick = ()=>{ s.units='F'; document.getElementById('unitF').classList.add('on'); document.getElementById('unitC').classList.remove('on'); };
+
+    // Language
+    document.getElementById('langSel').onchange = (e)=>{ s.language = e.target.value; };
+
+    // Mute
+    document.getElementById('mutedChk').onchange = (e)=>{ s.muted = e.target.checked; };
+
+    // Save / Reset
+    document.getElementById('saveSettings').onclick = ()=>{ saveSettings(s); alert('Einstellungen gespeichert'); };
+    document.getElementById('resetSettings').onclick = ()=>{ if(confirm('Auf Standard zurücksetzen?')){ s = JSON.parse(JSON.stringify(DEFAULTS)); saveSettings(s); renderPanel(); } };
+  }
+
+  document.getElementById("openPanel").onclick = ()=>{ renderPanel(); };
+  // initial render
+  renderPanel();
 }
 
 function renderMap(){
