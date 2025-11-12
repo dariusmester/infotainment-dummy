@@ -690,38 +690,153 @@ function applyAssistFormToState(body, target){
 }
 function renderMusic(){
   const pad=document.getElementById("padArea"), footer=document.getElementById("footer");
+  
+  // Music state (persisted in localStorage)
+  const MUSIC_KEY = 'music_player_v1';
+  const songs = [
+    { title: 'Midnight Echo', artist: 'Lunar Waves', duration: 3.45 },
+    { title: 'Neon Dreams', artist: 'Synthwave Collective', duration: 4.12 },
+    { title: 'Ocean Breeze', artist: 'Coastal Vibes', duration: 3.58 },
+    { title: 'Electric Thunder', artist: 'Storm Audio', duration: 5.23 },
+    { title: 'Starlight', artist: 'Night Sky', duration: 3.32 },
+    { title: 'Digital Love', artist: 'Future Sound', duration: 4.05 },
+    { title: 'City Lights', artist: 'Urban Pulse', duration: 3.47 },
+    { title: 'Crystal Harmony', artist: 'Zen Beats', duration: 4.18 },
+    { title: 'Velocity', artist: 'Speed Demons', duration: 3.56 },
+    { title: 'Ethereal Whisper', artist: 'Ambient Dreams', duration: 5.41 },
+    { title: 'Golden Hour', artist: 'Sunset Sessions', duration: 3.29 },
+    { title: 'Pulse', artist: 'Electronic Edge', duration: 4.33 },
+    { title: 'Moonlit Path', artist: 'Night Wanderer', duration: 3.52 },
+    { title: 'Resonance', artist: 'Echo Chamber', duration: 4.27 },
+    { title: 'Infinity', artist: 'Space Explorers', duration: 5.08 }
+  ];
+  
+  function loadMusicState(){
+    const raw = localStorage.getItem(MUSIC_KEY);
+    if(!raw) return { currentTrackIdx: 0, isPlaying: false, progressSec: 0 };
+    try { return JSON.parse(raw); } catch { return { currentTrackIdx: 0, isPlaying: false, progressSec: 0 }; }
+  }
+  function saveMusicState(state){ localStorage.setItem(MUSIC_KEY, JSON.stringify(state)); }
+  
+  let musicState = loadMusicState();
+  
   pad.innerHTML = `
     <div class="pad-toolbar"><button id="openPlaylist">Playlist</button><button id="openNowPlaying">Now Playing</button></div>
     <div class="pad-content" id="musicBody"></div>
   `;
-  footer.innerHTML = `<button>⏮︎</button><button>⏯︎</button><button>⏭︎</button>`;
-  document.getElementById("openPlaylist").onclick = ()=>{
-    const body=document.getElementById("musicBody");
-    body.innerHTML = `<div id="list" class="scroll"><div class="inner"></div></div><div class="loading" id="loading">Lade Playlist …</div>`;
-    const list=body.querySelector("#list"), inner=list.querySelector(".inner"), loading=body.querySelector("#loading");
-    setTimeout(()=>{ loading.remove(); inner.innerHTML = Array.from({length:80},(_,i)=>`<div class="row-item"><span>Track ${i+1}</span><span class="muted">${(3+Math.random()*3).toFixed(1)} min</span></div>`).join(""); }, 300);
-    inner?.addEventListener("click", ()=>{ /* ausw. */ });
-    makeInertiaScroll(list);
+  
+  // Update footer controls
+  function updateFooter(){
+    const playBtn = footer.querySelector('#playPauseBtn');
+    if(playBtn) playBtn.textContent = musicState.isPlaying ? '⏸︎' : '⏯︎';
+  }
+  
+  footer.innerHTML = `<button id="prevBtn">⏮︎</button><button id="playPauseBtn">${musicState.isPlaying ? '⏸︎' : '⏯︎'}</button><button id="nextBtn">⏭︎</button>`;
+  
+  // Previous track
+  document.getElementById("prevBtn").onclick = ()=>{
+    musicState.currentTrackIdx = (musicState.currentTrackIdx - 1 + songs.length) % songs.length;
+    musicState.progressSec = 0;
+    saveMusicState(musicState);
+    showNowPlaying();
   };
-  document.getElementById("openNowPlaying").onclick = ()=>{
-    document.getElementById("musicBody").innerHTML = `
-      <div style="display:grid; place-items:center; height:100%;">
-        <div style="text-align:center;">
-          <div style="font-size:48px; margin-bottom:8px;">🎵</div>
-          <div class="slider" style="margin-top:12px;">
-            <span class="muted">Scrub</span>
-            <div class="track"><div class="thumb" id="scrub" style="left:20%"></div></div>
-          </div>
+  
+  // Play/Pause
+  document.getElementById("playPauseBtn").onclick = ()=>{
+    musicState.isPlaying = !musicState.isPlaying;
+    saveMusicState(musicState);
+    updateFooter();
+  };
+  
+  // Next track
+  document.getElementById("nextBtn").onclick = ()=>{
+    musicState.currentTrackIdx = (musicState.currentTrackIdx + 1) % songs.length;
+    musicState.progressSec = 0;
+    saveMusicState(musicState);
+    showNowPlaying();
+  };
+  
+  function showPlaylist(){
+    const body = document.getElementById("musicBody");
+    body.innerHTML = `<div id="list" class="scroll"><div class="inner"></div></div>`;
+    const list = body.querySelector("#list"), inner = list.querySelector(".inner");
+    inner.innerHTML = songs.map((song, idx) => `
+      <div class="row-item" data-idx="${idx}" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; ${musicState.currentTrackIdx === idx ? 'background:#1a3a50; font-weight:bold;' : ''}">
+        <div>
+          <div>${song.title}</div>
+          <div class="muted">${song.artist}</div>
         </div>
-      </div>`;
-    const track=document.querySelector(".track"), thumb=document.getElementById("scrub");
-    track.addEventListener("pointerdown", e=>{
-      track.setPointerCapture(e.pointerId);
-      function move(ev){ const r=track.getBoundingClientRect(); const p=((ev.clientX-r.left)/r.width)*100; thumb.style.left=Math.max(0,Math.min(100,p))+"%"; }
-      function up(){ track.removeEventListener("pointermove",move); track.removeEventListener("pointerup",up); }
-      track.addEventListener("pointermove",move); track.addEventListener("pointerup",up,{once:true});
+        <span class="muted">${song.duration.toFixed(2)} min</span>
+      </div>
+    `).join("");
+    
+    inner.addEventListener("click", (ev) => {
+      const row = ev.target.closest("[data-idx]");
+      if(!row) return;
+      musicState.currentTrackIdx = Number(row.dataset.idx);
+      musicState.progressSec = 0;
+      musicState.isPlaying = true;
+      saveMusicState(musicState);
+      updateFooter();
+      showNowPlaying();
     });
-  };
+    
+    makeInertiaScroll(list);
+  }
+  
+  function showNowPlaying(){
+    const body = document.getElementById("musicBody");
+    const song = songs[musicState.currentTrackIdx];
+    const totalSec = song.duration * 60;
+    const minElapsed = Math.floor(musicState.progressSec / 60);
+    const secElapsed = Math.floor(musicState.progressSec % 60);
+    const minTotal = Math.floor(totalSec / 60);
+    const secTotal = Math.floor(totalSec % 60);
+    
+    body.innerHTML = `
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:24px; padding:20px;">
+        <div style="font-size:64px;">🎵</div>
+        <div style="text-align:center;">
+          <div style="font-size:24px; font-weight:bold;">${song.title}</div>
+          <div style="font-size:16px; color:#9fb0bf; margin-top:6px;">${song.artist}</div>
+        </div>
+        <div class="slider" style="width:100%; max-width:300px;">
+          <div class="track"><div class="thumb" id="scrub" style="left:${(musicState.progressSec / totalSec) * 100}%"></div></div>
+        </div>
+        <div style="display:flex; gap:12px; font-size:12px; color:#9fb0bf;">
+          <span>${minElapsed.toString().padStart(2,'0')}:${secElapsed.toString().padStart(2,'0')}</span>
+          <span>/</span>
+          <span>${minTotal.toString().padStart(2,'0')}:${secTotal.toString().padStart(2,'0')}</span>
+        </div>
+      </div>
+    `;
+    
+    const track = body.querySelector(".track"), thumb = body.querySelector("#scrub");
+    if(track && thumb){
+      track.addEventListener("pointerdown", e => {
+        track.setPointerCapture(e.pointerId);
+        function move(ev){
+          const r = track.getBoundingClientRect();
+          const pct = Math.max(0, Math.min(100, ((ev.clientX - r.left) / r.width) * 100));
+          thumb.style.left = pct + "%";
+          musicState.progressSec = (pct / 100) * totalSec;
+          saveMusicState(musicState);
+        }
+        function up(){
+          track.removeEventListener("pointermove", move);
+          track.removeEventListener("pointerup", up);
+        }
+        track.addEventListener("pointermove", move);
+        track.addEventListener("pointerup", up, {once: true});
+      });
+    }
+  }
+  
+  document.getElementById("openPlaylist").onclick = showPlaylist;
+  document.getElementById("openNowPlaying").onclick = showNowPlaying;
+  
+  // Show playlist by default
+  showPlaylist();
 }
 
 function renderNav(){
