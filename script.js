@@ -8,8 +8,8 @@ const APPS = [
 , label:"Telefon" },
 { key:"message", icon:`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 20 20"><path fill="#20AF60" d="M10 0c5.342 0 10 4.41 10 9.5c0 5.004-4.553 8.942-10 8.942a11.01 11.01 0 0 1-3.43-.546c-.464.45-.623.603-1.608 1.553c-.71.536-1.378.718-1.975.38c-.602-.34-.783-1.002-.66-1.874l.4-2.319C.99 14.002 0 11.842 0 9.5C0 4.41 4.657 0 10 0Zm0 1.4c-4.586 0-8.6 3.8-8.6 8.1c0 2.045.912 3.928 2.52 5.33l.02.017l.297.258l-.067.39l-.138.804l-.037.214l-.285 1.658a2.79 2.79 0 0 0-.03.337v.095c0 .005-.001.007-.002.008c.007-.01.143-.053.376-.223l2.17-2.106l.414.156a9.589 9.589 0 0 0 3.362.605c4.716 0 8.6-3.36 8.6-7.543c0-4.299-4.014-8.1-8.6-8.1ZM5.227 7.813a1.5 1.5 0 1 1 0 2.998a1.5 1.5 0 0 1 0-2.998Zm4.998 0a1.5 1.5 0 1 1 0 2.998a1.5 1.5 0 0 1 0-2.998Zm4.997 0a1.5 1.5 0 1 1 0 2.998a1.5 1.5 0 0 1 0-2.998Z"/></svg>`
 , label:"Nachricht" },
-{ key:"map", icon:`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="#FFFFFF"><g fill="none" stroke="#8080FF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor"><path d="M15.129 13.747a.906.906 0 0 1-1.258 0c-1.544-1.497-3.613-3.168-2.604-5.595A3.53 3.53 0 0 1 14.5 6c1.378 0 2.688.84 3.233 2.152c1.008 2.424-1.056 4.104-2.604 5.595M14.5 9.5h.009"/><path d="M2.5 12c0-4.478 0-6.718 1.391-8.109S7.521 2.5 12 2.5c4.478 0 6.718 0 8.109 1.391S21.5 7.521 21.5 12c0 4.478 0 6.718-1.391 8.109S16.479 21.5 12 21.5c-4.478 0-6.718 0-8.109-1.391S2.5 16.479 2.5 12M17 21L3 7m7 7l-6 6"/></g></svg>`
-, label:"Karte" },
+{ key:"bluetooth", icon:`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 768 1026"><path fill="#65f3deff" d="M750 335q-11 11-30 15L471 513l279 183q18 18 18 43.5T750 783q-13 13-35 16l-347 205q-3 1-10 5.5t-11.5 7.5t-11 5.5t-13.5 2.5q-28 2-48.5-18T257 956V653l-152 99q-18 18-43.5 18T18 752T0 708.5T18 665l232-152L18 361Q0 343 0 317.5T18 274t43.5-18t43.5 18l152 99V70q-4-31 16.5-51T322 1q5 0 10 1t10 4t8 4.5t9.5 6T368 23l382 225q18 18 18 43.5T750 335zM385 855l205-120l-205-134v254zm0-684v254l205-134z"/></svg>`
+, label:"Bluetooth" },
 { key:"climate", icon:`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 256 256"><path fill="#4040F0" d="m246.14 81.52l-14.72 4.79l9.1 12.52a12 12 0 1 1-19.42 14.11l-9.1-12.52l-9.1 12.52a12 12 0 1 1-19.42-14.11l9.1-12.52l-14.72-4.79a12 12 0 1 1 7.41-22.82L200 63.48V48a12 12 0 0 1 24 0v15.48l14.73-4.78a12 12 0 1 1 7.41 22.82ZM160 150.69a64 64 0 1 1-104 0V56a52 52 0 0 1 104 0ZM148 188a40 40 0 0 0-9.23-25.55a12 12 0 0 1-2.77-7.68V56a28 28 0 0 0-56 0v98.78a12 12 0 0 1-2.91 7.83A40 40 0 1 0 148 188Zm-28-20.78V120a12 12 0 0 0-24 0v47.22a24 24 0 1 0 24 0Z"/></svg>`
 , label:"Klima" },
 { key:"seats", icon:`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="#89CFF0"><g fill="none"><path d="M24 0v24H0V0h24ZM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035c-.01-.004-.019-.001-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427c-.002-.01-.009-.017-.017-.018Zm.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093c.012.004.023 0 .029-.008l.004-.014l-.034-.614c-.003-.012-.01-.02-.02-.022Zm-.715.002a.023.023 0 0 0-.027.006l-.006.014l-.034.614c0 .012.007.02.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01l-.184-.092Z"/><path fill="#89CFF0" d="M3.468 16.745c.495-.958 1.54-1.6 2.804-1.441a33.75 33.75 0 0 1 3.97.726c2.01.502 3.771 1.467 5.073 2.348l.44.306l.4.295l.358.276l.314.254l.267.226l.22.192c.843.751.27 1.978-.685 2.068l-.112.005H7.923c-1.682 0-3.08-.845-4.104-2.126c-.774-.967-.84-2.183-.35-3.129ZM19 2c.893 0 1.278.84 1.467 1.61l.06.268l.024.128c.144.797.221 1.842.252 2.916c.06 2.125-.062 4.602-.327 5.795c-.462 2.082-1.14 3.529-1.952 4.401c-.826.89-1.942 1.291-2.971.776c-.789-.394-1.26-1.331-1.518-2.13a5.734 5.734 0 0 1 .017-3.58c.21-.632.588-1.142 1.004-1.627l.363-.411c.442-.495.885-.99 1.187-1.593c.44-.88.56-1.843.597-2.81l.014-.58l.009-.56l.006-.138l.02-.28C17.347 3.107 17.716 2 19 2Z"/></g></svg>`
@@ -359,19 +359,19 @@ function openApp(key){
 
   // Untermenü der App laden
   switch(key){
-    case "music":   renderMusic();   break;
-    case "nav":     renderNav();     break;
-    case "phone":   renderPhone();   break;
-    case "message": renderMessage(); break;
-    case "settings":renderSettings();break;
-    case "map":     renderMap();     break;
-  case "car":     renderCar();     break;
-    case "climate": renderClimate(); break;
-    case "info":    renderInfo();    break;
-    case "seats":   renderSeats();   break;
-    case "drivemode": renderDriveMode(); break;
-    case "assistants": renderAssistants(); break;
-    case "user":    renderUser();    break;
+    case "music":     renderMusic();    break;
+    case "nav":       renderNav();      break;
+    case "phone":     renderPhone();    break;
+    case "message":   renderMessage();  break;
+    case "settings":  renderSettings(); break;
+    case "bluetooth": renderBluetooth();break;
+    case "car":       renderCar();      break;
+    case "climate":   renderClimate();  break;
+    case "info":      renderInfo();     break;
+    case "seats":     renderSeats();    break;
+    case "drivemode": renderDriveMode();break;
+    case "assistants":renderAssistants();break;
+    case "user":      renderUser();     break;
   }
     // bisheriges Verhalten für alle anderen Apps
     //renderSubmenu(key);
@@ -476,6 +476,7 @@ function downloadCSV(name,text){ const blob=new Blob([text],{type:"text/csv"}); 
 /* ===== Realistische Widgets (Scroll, Map, Slider) ===== */
 function makeInertiaScroll(container){
   const inner=container.querySelector(".inner");
+  if(!inner){ console.warn("makeInertiaScroll: .inner element not found"); return; }
   let dragging=false,lastY=0,vy=0,anim=null,startY=0,startTop=0;
   function setTop(y){ const max=Math.max(0, inner.scrollHeight - container.clientHeight); y=Math.min(max,Math.max(0,y)); inner.style.top=(-y)+"px"; container.dataset.scrollY=y; }
   container.addEventListener("pointerdown", e=>{
@@ -866,15 +867,126 @@ function renderNav(){
 
 function renderPhone(){
   const pad=document.getElementById("padArea");
+
+  // If no Bluetooth device connected, show simple fallback with button to open Bluetooth panel
+  const BT_KEY = 'bluetooth_active_v1';
+  const active = localStorage.getItem(BT_KEY) || null;
+  if(!active){
+    pad.innerHTML = `
+      <div class="pad-toolbar"><div style="font-weight:700;">Telefon</div></div>
+      <div class="pad-content" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;">
+        <div style="font-size:16px; color:#9fb0bf;">Kein Handy verbunden</div>
+        <div style="display:flex; gap:12px;">
+          <button id="openBluetoothFromPhone" class="pill">Zu Bluetooth</button>
+        </div>
+      </div>
+    `;
+
+    const btn = document.getElementById('openBluetoothFromPhone');
+    if(btn) btn.addEventListener('click', ()=>{
+      // open the Bluetooth submenu
+      openApp('bluetooth');
+    });
+    return;
+  }
+
+  // If a device is connected, show the normal contacts UI with realistic names
+  // Generate realistic contact names - extended list for scrolling
+  const contacts = [
+    { name: 'Alex Müller', phone: '+49 30 100001' },
+    { name: 'Ben König', phone: '+49 30 100002' },
+    { name: 'Carla Schmidt', phone: '+49 30 100003' },
+    { name: 'David Bauer', phone: '+49 30 100004' },
+    { name: 'Eva Neumann', phone: '+49 30 100005' },
+    { name: 'Fabian Weber', phone: '+49 30 100006' },
+    { name: 'Greta Hoffmann', phone: '+49 30 100007' },
+    { name: 'Hannah Klein', phone: '+49 30 100008' },
+    { name: 'Ian Schröder', phone: '+49 30 100009' },
+    { name: 'Julia Lange', phone: '+49 30 100010' },
+    { name: 'Karl Fischer', phone: '+49 30 100011' },
+    { name: 'Laura Braun', phone: '+49 30 100012' },
+    { name: 'Mia Vogel', phone: '+49 30 100013' },
+    { name: 'Nico Wolf', phone: '+49 30 100014' },
+    { name: 'Olivia Frank', phone: '+49 30 100015' },
+    { name: 'Peter Lang', phone: '+49 30 100016' },
+    { name: 'Quentin Mayer', phone: '+49 30 100017' },
+    { name: 'Rita Busch', phone: '+49 30 100018' },
+    { name: 'Simon Roth', phone: '+49 30 100019' },
+    { name: 'Tina Berg', phone: '+49 30 100020' },
+    { name: 'Uwe König', phone: '+49 30 100021' },
+    { name: 'Vera Brandt', phone: '+49 30 100022' },
+    { name: 'Willi Kern', phone: '+49 30 100023' },
+    { name: 'Xenia Jansen', phone: '+49 30 100024' },
+    { name: 'Yannick Otto', phone: '+49 30 100025' },
+    { name: 'Anton Schulz', phone: '+49 30 100026' },
+    { name: 'Bianca Meyer', phone: '+49 30 100027' },
+    { name: 'Christian Koch', phone: '+49 30 100028' },
+    { name: 'Diana Krüger', phone: '+49 30 100029' },
+    { name: 'Erik Wagner', phone: '+49 30 100030' },
+    { name: 'Franziska Becker', phone: '+49 30 100031' },
+    { name: 'Georg Richter', phone: '+49 30 100032' },
+    { name: 'Helena Schäfer', phone: '+49 30 100033' },
+    { name: 'Igor Schneider', phone: '+49 30 100034' },
+    { name: 'Jana Zimmermann', phone: '+49 30 100035' },
+    { name: 'Klaus Hoffmann', phone: '+49 30 100036' },
+    { name: 'Linda Schwarz', phone: '+49 30 100037' },
+    { name: 'Martin Herrmann', phone: '+49 30 100038' },
+    { name: 'Nina Keller', phone: '+49 30 100039' },
+    { name: 'Otto Friedrich', phone: '+49 30 100040' }
+  ];
+
   pad.innerHTML = `
-    <div class="pad-toolbar"><button id="btnContacts">Kontakte</button></div>
-    <div class="pad-content"><div id="list" class="scroll"><div class="inner"></div></div><div class="loading" id="loading" hidden>Lade …</div></div>`;
-  const list=pad.querySelector("#list"), inner=list.querySelector(".inner"), loading=pad.querySelector("#loading");
-  document.getElementById("btnContacts").onclick = ()=>{
-    loading.hidden=false;
-    setTimeout(()=>{ loading.hidden=true; inner.innerHTML=Array.from({length:150},(_,i)=>`<div class="row-item"><span>Kontakt ${(i+1).toString().padStart(3,"0")}</span><span class="muted">+49 30 ${100000+i}</span></div>`).join(""); }, 300);
-  };
+    <div class="pad-toolbar"><div style="font-weight:700;">Kontakte</div></div>
+    <div class="pad-content" id="phoneContent"><div id="list" class="scroll"><div class="inner"></div></div></div>`;
+  const list=pad.querySelector("#list");
+  if(!list){ console.warn("renderPhone: list container not found"); return; }
+  const inner=list.querySelector(".inner");
+  if(!inner){ console.warn("renderPhone: inner element not found"); return; }
+  
+  // Populate contacts immediately with call buttons
+  inner.innerHTML = contacts.map((c, idx)=>`
+    <div class="row-item" style="display:flex; justify-content:space-between; align-items:center;" data-contact-idx="${idx}">
+      <div>
+        <div style="font-weight:600;">${c.name}</div>
+        <div class="muted" style="font-size:12px; margin-top:4px;">${c.phone}</div>
+      </div>
+      <button class="pill" data-call-idx="${idx}" style="min-width:100px;">Anrufen</button>
+    </div>
+  `).join("");
+  
+  // Add call button handlers
+  inner.querySelectorAll('[data-call-idx]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.callIdx);
+      const contact = contacts[idx];
+      showCallView(contact);
+    });
+  });
+  
   makeInertiaScroll(list);
+  
+  // Function to show call view
+  function showCallView(contact){
+    const phoneContent = document.getElementById('phoneContent');
+    if(!phoneContent) return;
+    
+    phoneContent.innerHTML = `
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:24px; padding:20px;">
+        <div style="font-size:28px; font-weight:700;">${contact.name}</div>
+        <div style="font-size:18px; color:#9fb0bf;">${contact.phone}</div>
+        <div style="font-size:16px; color:#08a0f7; margin-top:12px;">Anruf läuft...</div>
+        <div style="display:flex; gap:16px; margin-top:40px;">
+          <button class="pill" id="endCall" style="background:#ff3b3b; border-color:#ff3b3b; min-width:120px;">Beenden</button>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('endCall').addEventListener('click', ()=>{
+      // Return to contact list by re-rendering phone
+      renderPhone();
+    });
+  }
 }
 
 function renderMessage(){
@@ -910,10 +1022,11 @@ function renderSettings(){
   let s = loadSettings();
 
   pad.innerHTML = `
-    <div class="pad-toolbar"><button id="openPanel">Einstellungen</button></div>
-    <div class="pad-content" id="setBody"></div>`;
+    <div class="pad-content" id="setBody"></div>
+  `;
 
   function renderPanel(){
+
     document.getElementById("setBody").innerHTML = `
       <div class="assist-list" style="padding:12px; display:flex; flex-direction:column; gap:20px;">
 
@@ -923,7 +1036,9 @@ function renderSettings(){
             <label>Helligkeit</label>
             <div style="display:flex; align-items:center; gap:12px; width:100%;">
               <div style="flex:1;">
-                <div class="slider"><div class="track" id="brightTrack"><div class="thumb" id="brightThumb" style="left:${s.brightness}%"></div></div></div>
+                <div class="slider" style="display:flex; align-items:center; gap:8px;">
+                  <input id="brightness" type="range" min="0" max="100" step="1" value="${s.brightness}" class="assist-range" style="flex:1;">
+                </div>
               </div>
               <div style="width:56px; text-align:right; color:#9fb0bf;"><span id="brightVal">${s.brightness}%</span></div>
             </div>
@@ -942,7 +1057,10 @@ function renderSettings(){
           <div style="font-weight:700; margin-bottom:8px; font-size:18px;">Sound</div>
           <div class="form-row">
             <label>Lautstärke</label>
-            <div class="fan-box" style="flex:1; align-items:center;"><div class="track" id="volTrack" style="flex:1"><div class="thumb" id="volThumb" style="left:${s.volume}%"></div></div><div style="width:48px; text-align:right; color:#9fb0bf;"><span id="volVal">${s.volume}%</span></div></div>
+            <div class="fan-box" style="flex:1; align-items:center;">
+              <input id="volume" type="range" min="0" max="100" step="1" value="${s.volume}" class="assist-range" style="flex:1;">
+              <span id="volVal" class="assist-range-value">${s.volume}%</span>
+            </div>
           </div>
           <div class="form-row">
             <label>Stummschalten</label>
@@ -973,15 +1091,13 @@ function renderSettings(){
     // populate selects
     document.getElementById('langSel').value = s.language;
 
-    // Brightness slider
-    const brightTrack = document.getElementById('brightTrack'), brightThumb = document.getElementById('brightThumb'), brightVal = document.getElementById('brightVal');
-    function setBright(p){ s.brightness = Math.round(Math.max(0, Math.min(100, p))); brightThumb.style.left = s.brightness + '%'; brightVal.textContent = s.brightness + '%'; }
-    brightTrack.addEventListener('pointerdown', e=>{ brightTrack.setPointerCapture(e.pointerId); function mv(ev){ const r=brightTrack.getBoundingClientRect(); setBright(((ev.clientX-r.left)/r.width)*100); } function up(){ brightTrack.removeEventListener('pointermove', mv); brightTrack.removeEventListener('pointerup', up); } brightTrack.addEventListener('pointermove', mv); brightTrack.addEventListener('pointerup', up, {once:true}); });
+  // Brightness slider (use .assist-range input for consistent look)
+  const brightInput = document.getElementById('brightness'), brightVal = document.getElementById('brightVal');
+  if(brightInput){ brightInput.value = s.brightness; brightVal.textContent = s.brightness + '%'; brightInput.addEventListener('input', (e)=>{ s.brightness = Number(e.target.value); brightVal.textContent = s.brightness + '%'; }); }
 
-    // Volume slider
-    const volTrack = document.getElementById('volTrack'), volThumb = document.getElementById('volThumb'), volVal = document.getElementById('volVal');
-    function setVol(p){ s.volume = Math.round(Math.max(0, Math.min(100, p))); volThumb.style.left = s.volume + '%'; volVal.textContent = s.volume + '%'; }
-    volTrack.addEventListener('pointerdown', e=>{ volTrack.setPointerCapture(e.pointerId); function mv(ev){ const r=volTrack.getBoundingClientRect(); setVol(((ev.clientX-r.left)/r.width)*100); } function up(){ volTrack.removeEventListener('pointermove', mv); volTrack.removeEventListener('pointerup', up); } volTrack.addEventListener('pointermove', mv); volTrack.addEventListener('pointerup', up, {once:true}); });
+  // Volume slider
+  const volInput = document.getElementById('volume'), volVal = document.getElementById('volVal');
+  if(volInput){ volInput.value = s.volume; volVal.textContent = s.volume + '%'; volInput.addEventListener('input', (e)=>{ s.volume = Number(e.target.value); volVal.textContent = s.volume + '%'; }); }
 
     // Theme buttons
     document.getElementById('themeDark').onclick = ()=>{ s.theme='dark'; document.getElementById('themeDark').classList.add('on'); document.getElementById('themeLight').classList.remove('on'); };
@@ -1002,27 +1118,11 @@ function renderSettings(){
     document.getElementById('resetSettings').onclick = ()=>{ if(confirm('Auf Standard zurücksetzen?')){ s = JSON.parse(JSON.stringify(DEFAULTS)); saveSettings(s); renderPanel(); } };
   }
 
-  document.getElementById("openPanel").onclick = ()=>{ renderPanel(); };
   // initial render
   renderPanel();
 }
 
-function renderMap(){
-  const pad=document.getElementById("padArea");
-  pad.innerHTML = `
-    <div class="pad-toolbar"><button id="openPOI">POIs</button></div>
-    <div class="pad-content">
-      <div id="poi" class="scroll" style="display:none;"><div class="inner"></div></div>
-      <div id="map2" class="map"><div class="pin" style="left:50%; top:50%"></div></div>
-    </div>`;
-  const poi=pad.querySelector("#poi"), inner=poi.querySelector(".inner"), map=pad.querySelector("#map2");
-  document.getElementById("openPOI").onclick=()=>{
-    inner.innerHTML=Array.from({length:40},(_,i)=>`<div class="row-item">POI #${i+1}</div>`).join("");
-    poi.style.display="block";
-  };
-  inner.addEventListener("click", ()=>{ poi.style.display="none"; });
-  makeInertiaScroll(poi); makeMapPan(map);
-}
+
 
 function renderClimate(){
   const pad = document.getElementById("padArea");
@@ -1652,6 +1752,86 @@ function renderUser(){
   });
 }
 
+function renderBluetooth(){
+  const pad = document.getElementById('padArea');
+  const BT_KEY = 'bluetooth_active_v1';
+  const active = localStorage.getItem(BT_KEY) || null;
+  const phones = [
+    'iPhone 14 – Darius', 'Samsung Galaxy S23 – Anna', 'Pixel 7 – Ben', 'iPhone 12 – Carla', 'Samsung A53 – David',
+    'OnePlus 10 – Eva', 'Nokia XR20 – Fabian', 'Huawei P50 – Greta', 'Xiaomi 12 – Hannah', 'Sony Xperia 5 – Ian',
+    'iPhone SE – Julia', 'Moto G – Karl', 'Fairphone 4 – Laura', 'LG Velvet – Mia', 'iPhone 14 Pro – Maya'
+  ];
+
+  pad.innerHTML = `
+    <div style="padding:12px 12px 0 12px; display:flex; flex-direction:column; gap:12px; height:100%;">
+      <div style="font-weight:700; font-size:18px;">Bluetooth</div>
+      <div style="font-size:13px; color:#9fb0bf;">Verbundenes Gerät: <span id="btActive">${active ? active : 'Keines'}</span></div>
+      <div id="btList" class="scroll" style="flex:1; position:relative; border-top:1px solid var(--secondarycolor);">
+        <div class="inner"></div>
+      </div>
+    </div>
+  `;
+
+  // Populate the list
+  const listContainer = document.getElementById('btList');
+  const inner = listContainer ? listContainer.querySelector('.inner') : null;
+  if(!inner) return;
+
+  inner.innerHTML = phones.map(p=>`
+    <div class="row-item" data-phone="${p}" style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:600">${p.split(' – ')[0]}</div>
+        <div class="muted" style="font-size:12px; margin-top:4px;">${p.split(' – ')[1] || ''}</div>
+      </div>
+      <button class="seg ${p===active? 'on' : '' }" data-phone="${p}">${p===active? 'Verbunden' : 'Verbinden'}</button>
+    </div>
+  `).join('');
+
+  // Wire up buttons
+  inner.querySelectorAll('[data-phone]').forEach(el=>{
+    const btn = el.querySelector('button');
+    if(!btn) return;
+    btn.addEventListener('click', (e)=>{
+      const phone = e.currentTarget.dataset.phone;
+      let curr = localStorage.getItem(BT_KEY);
+      if(curr === phone){
+        // disconnect
+        localStorage.removeItem(BT_KEY);
+        curr = null;
+      } else {
+        localStorage.setItem(BT_KEY, phone);
+        curr = phone;
+      }
+      // update UI
+      document.getElementById('btActive').textContent = curr || 'Keines';
+      // update topbar status as well
+      try{ updateTopbarBluetooth(); }catch(e){}
+      // refresh Phone UI if it's currently open (so it can switch between fallback and contacts view)
+      try{ refreshPhoneUI(); }catch(e){}
+      inner.querySelectorAll('.row-item').forEach(row=>{
+        const rowBtn = row.querySelector('button');
+        const p = row.dataset.phone;
+        if(curr === p){ rowBtn.classList.add('on'); rowBtn.textContent = 'Verbunden'; }
+        else { rowBtn.classList.remove('on'); rowBtn.textContent = 'Verbinden'; }
+      });
+    });
+  });
+
+  // enable inertia scrolling for the list
+  if(listContainer) makeInertiaScroll(listContainer);
+}
+
+// Global function to refresh Phone UI if it's currently open
+// This is called when Bluetooth connection status changes, so Phone can switch views
+function refreshPhoneUI(){
+  // Check if we're currently in the Phone submenu (title should contain "Telefon")
+  const titleEl = document.querySelector('#toolbar #title');
+  const phoneAppOpen = titleEl && titleEl.textContent.includes('Telefon');
+  if(!phoneAppOpen) return; // not currently open, skip
+  // re-render the phone submenu with updated BT status
+  renderPhone();
+}
+
 /* ===== Start mit Kacheln ===== */
 renderHome();
 
@@ -1669,3 +1849,23 @@ function startClock(){
   setInterval(tick, 1000);
 }
 startClock();
+
+// Update the topbar with current Bluetooth device and a simple signal indicator.
+function updateTopbarBluetooth(){
+  const BT_KEY = 'bluetooth_active_v1';
+  const el = document.getElementById('btStatus');
+  if(!el) return;
+  const raw = localStorage.getItem(BT_KEY);
+  if(!raw){ el.textContent = 'Kein Handy verbunden'; el.title = 'Kein Handy verbunden'; return; }
+  // shorten long names for topbar space
+  const short = raw.length > 28 ? raw.slice(0,25) + '…' : raw;
+  // show a simple LTE label as reception indicator
+  el.textContent = `${short} LTE`;
+  el.title = raw;
+}
+
+// initialize topbar bluetooth status on startup
+// Ensure default: no phone connected (clear any persisted device on startup)
+const BLUETOOTH_FORCE_NO_DEFAULT = true;
+if(BLUETOOTH_FORCE_NO_DEFAULT){ try{ localStorage.removeItem('bluetooth_active_v1'); }catch(e){} }
+try{ updateTopbarBluetooth(); }catch(e){}

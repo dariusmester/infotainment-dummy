@@ -81,6 +81,7 @@ body { background:#000000; color:#e8f3ff; font-family:system-ui,-apple-system,Se
   #06111a; background-size:40px 40px; touch-action:none; }
 .map .pin { position:absolute; width:18px; height:18px; background:#ff3b3b; border-radius:50%; transform:translate(-50%,-100%); box-shadow:0 0 0 2px #881a1a; }
 .loading { position:absolute; inset:0; display:grid; place-items:center; font-size:12px; opacity:.8; }
+.loading[hidden] { display: none !important; }
 
 /* Calibration dialog */
 dialog#calDialog::backdrop { background: rgb(0 0 0 / .6); }
