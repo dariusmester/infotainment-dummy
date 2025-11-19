@@ -477,20 +477,34 @@ function downloadCSV(name,text){ const blob=new Blob([text],{type:"text/csv"}); 
 function makeInertiaScroll(container){
   const inner=container.querySelector(".inner");
   if(!inner){ console.warn("makeInertiaScroll: .inner element not found"); return; }
-  let dragging=false,lastY=0,vy=0,anim=null,startY=0,startTop=0;
+  let dragging=false,lastY=0,vy=0,anim=null,startY=0,startTop=0,moved=false;
   function setTop(y){ const max=Math.max(0, inner.scrollHeight - container.clientHeight); y=Math.min(max,Math.max(0,y)); inner.style.top=(-y)+"px"; container.dataset.scrollY=y; }
-  container.addEventListener("pointerdown", e=>{
-    container.setPointerCapture(e.pointerId);
-    dragging=true; vy=0; startY=e.clientY; startTop=Number(container.dataset.scrollY||0); lastY=e.clientY; cancelAnimationFrame(anim);
+  
+  // Listen on inner instead of container to better handle child elements
+  inner.addEventListener("pointerdown", e=>{
+    // Allow buttons to be clicked - only start drag if not on a button
+    if(e.target.closest('button')) return;
+    inner.setPointerCapture(e.pointerId);
+    dragging=true; moved=false; vy=0; startY=e.clientY; startTop=Number(container.dataset.scrollY||0); lastY=e.clientY; cancelAnimationFrame(anim);
+    e.preventDefault();
   });
-  container.addEventListener("pointermove", e=>{
+  inner.addEventListener("pointermove", e=>{
     if(!dragging) return;
-    const dy=e.clientY-startY; setTop(startTop - dy);
+    const dy=e.clientY-startY; 
+    if(Math.abs(dy) > 5) moved = true; // Mark as moved if dragged more than 5px
+    setTop(startTop - dy);
     vy = (e.clientY - lastY); lastY = e.clientY;
+    e.preventDefault();
   });
   function fling(){ setTop(Number(container.dataset.scrollY||0) - vy); vy*=0.92; if(Math.abs(vy)>0.5) anim=requestAnimationFrame(fling); }
-  function end(){ if(!dragging) return; dragging=false; anim=requestAnimationFrame(fling); }
-  container.addEventListener("pointerup", end); container.addEventListener("pointercancel", end);
+  function end(e){ 
+    if(!dragging) return; 
+    dragging=false; 
+    if(moved) anim=requestAnimationFrame(fling);
+  }
+  inner.addEventListener("pointerup", end); 
+  inner.addEventListener("pointercancel", end);
+  inner.addEventListener("lostpointercapture", end);
 }
 function makeMapPan(el){
   let dragging=false,vx=0,vy=0,anim=null,ox=0,oy=0,lx=0,ly=0;
@@ -937,7 +951,7 @@ function renderPhone(){
 
   pad.innerHTML = `
     <div class="pad-toolbar"><div style="font-weight:700;">Kontakte</div></div>
-    <div class="pad-content" id="phoneContent"><div id="list" class="scroll"><div class="inner"></div></div></div>`;
+    <div class="pad-content"><div id="phoneContent" style="position:absolute; inset:0;"><div id="list" class="scroll"><div class="inner"></div></div></div></div>`;
   const list=pad.querySelector("#list");
   if(!list){ console.warn("renderPhone: list container not found"); return; }
   const inner=list.querySelector(".inner");
