@@ -737,10 +737,7 @@ function renderMusic(){
   
   pad.innerHTML = `
     <div id="musicWrapper" style="position:absolute; inset:0; display:flex; flex-direction:column; gap:0;">
-      <div class="pad-toolbar" style="gap:8px; flex-shrink:0;">
-        <button id="openPlaylist"> Meine Playlist</button>
-      </div>
-  <div class="pad-content" id="musicBody" style="position:relative; inset:auto; flex:1; overflow:hidden;"></div>
+      <div class="pad-content" id="musicBody" style="position:relative; inset:auto; flex:1; overflow:hidden;"></div>
       <div id="musicFooter" style="display:flex; gap:12px; padding:16px; border-top:1px solid #3a4245; flex-shrink:0; align-items:center;">
         <div id="currentSongInfo" style="flex:1; font-size:14px; min-width:0;">
           <div id="songTitle" style="font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Midnight Echo</div>
@@ -817,8 +814,6 @@ function renderMusic(){
     
     makeInertiaScroll(list);
   }
-  
-  document.getElementById("openPlaylist").onclick = showPlaylist;
   
   // Initialize with current song info and show playlist
   updateSongInfo();
@@ -1192,7 +1187,7 @@ function renderSettings(){
   let s = loadSettings();
 
   pad.innerHTML = `
-    <div class="pad-content" id="setBody"></div>
+    <div id="setBody"></div>
   `;
 
   function renderPanel(){
