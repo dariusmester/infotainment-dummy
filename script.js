@@ -1005,24 +1005,125 @@ function renderPhone(){
 
 function renderMessage(){
   const pad=document.getElementById("padArea");
+  
+  // If no Bluetooth device connected, show simple fallback with button to open Bluetooth panel
+  const BT_KEY = 'bluetooth_active_v1';
+  const active = localStorage.getItem(BT_KEY) || null;
+  if(!active){
+    pad.innerHTML = `
+      <div class="pad-toolbar"><div style="font-weight:700;">Nachrichten</div></div>
+      <div class="pad-content" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;">
+        <div style="font-size:16px; color:#9fb0bf;">Kein Handy verbunden</div>
+        <div style="display:flex; gap:12px;">
+          <button id="openBluetoothFromMsg" class="pill">Zu Bluetooth</button>
+        </div>
+      </div>
+    `;
+
+    const btn = document.getElementById('openBluetoothFromMsg');
+    if(btn) btn.addEventListener('click', ()=>{
+      openApp('bluetooth');
+    });
+    return;
+  }
+
+  // If a device is connected, show messages list
+  const messages = [
+    { from: 'Alex Müller', text: 'Hallo! Wie geht es dir?', time: '10:23', unread: true },
+    { from: 'Carla Schmidt', text: 'Treffen wir uns heute?', time: '09:45', unread: true },
+    { from: 'David Bauer', text: 'Danke für die Info!', time: 'Gestern', unread: false },
+    { from: 'Eva Neumann', text: 'Kannst du mir helfen?', time: 'Gestern', unread: false },
+    { from: 'Fabian Weber', text: 'Meeting um 14 Uhr', time: 'Gestern', unread: false },
+    { from: 'Greta Hoffmann', text: 'Alles klar, bis dann!', time: 'Gestern', unread: false },
+    { from: 'Hannah Klein', text: 'Schönes Wochenende!', time: 'Fr', unread: false },
+    { from: 'Ian Schröder', text: 'Projekt ist fertig', time: 'Fr', unread: false },
+    { from: 'Julia Lange', text: 'Vielen Dank!', time: 'Do', unread: false },
+    { from: 'Karl Fischer', text: 'Bis morgen', time: 'Do', unread: false },
+    { from: 'Laura Braun', text: 'Perfekt!', time: 'Mi', unread: false },
+    { from: 'Mia Vogel', text: 'Verstanden', time: 'Mi', unread: false },
+    { from: 'Nico Wolf', text: 'Gute Idee', time: 'Di', unread: false },
+    { from: 'Olivia Frank', text: 'Klingt gut', time: 'Di', unread: false },
+    { from: 'Peter Lang', text: 'Bis später', time: 'Mo', unread: false }
+  ];
+
   pad.innerHTML = `
-    <div class="pad-toolbar"><button id="compose">Neue Nachricht</button><button id="inbox">Posteingang</button></div>
-    <div class="pad-content" id="msgBody"></div>`;
-  document.getElementById("compose").onclick = ()=>{
-    document.getElementById("msgBody").innerHTML = `
-      <div id="area" class="scroll"><div class="inner">
-        <div contenteditable="true" style="min-height:160px; padding:12px;">Nachricht hier eingeben …</div>
-        <div style="height:600px"></div>
-      </div></div>`;
-    makeInertiaScroll(document.getElementById("area"));
-  };
-  document.getElementById("inbox").onclick = ()=>{
-    document.getElementById("msgBody").innerHTML = `
-      <div id="list" class="scroll"><div class="inner">
-        ${Array.from({length:40},(_,i)=>`<div class="row-item"><span>Nachricht #${i+1}</span><span class="muted">${(new Date()).toLocaleTimeString()}</span></div>`).join("")}
-      </div></div>`;
-    makeInertiaScroll(document.getElementById("list"));
-  };
+    <div class="pad-toolbar"><div style="font-weight:700;">Nachrichten</div></div>
+    <div class="pad-content"><div id="msgContent" style="position:absolute; inset:0;"><div id="list" class="scroll"><div class="inner"></div></div></div></div>`;
+  
+  const list=pad.querySelector("#list");
+  if(!list){ console.warn("renderMessage: list container not found"); return; }
+  const inner=list.querySelector(".inner");
+  if(!inner){ console.warn("renderMessage: inner element not found"); return; }
+  
+  // Populate messages immediately
+  inner.innerHTML = messages.map((msg, idx)=>`
+    <div class="row-item" style="display:flex; justify-content:space-between; align-items:center; ${msg.unread ? 'background:#0e2533;' : ''}" data-msg-idx="${idx}">
+      <div style="flex:1;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <div style="font-weight:${msg.unread ? '700' : '600'};">${msg.from}</div>
+          <div class="muted" style="font-size:12px;">${msg.time}</div>
+        </div>
+        <div class="muted" style="font-size:14px;">${msg.text}</div>
+      </div>
+      <button class="pill" data-msg-idx="${idx}" style="min-width:100px; margin-left:12px;">Öffnen</button>
+    </div>
+  `).join("");
+  
+  // Add message open handlers
+  inner.querySelectorAll('[data-msg-idx]').forEach(btn=>{
+    if(btn.tagName === 'BUTTON'){
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.msgIdx);
+        const message = messages[idx];
+        showMessageView(message);
+      });
+    }
+  });
+  
+  makeInertiaScroll(list);
+  
+  // Function to show message conversation view
+  function showMessageView(message){
+    const msgContent = document.getElementById('msgContent');
+    if(!msgContent) return;
+    
+    msgContent.innerHTML = `
+      <div style="display:flex; flex-direction:column; height:100%;">
+        <div style="padding:16px; border-bottom:1px solid #505353; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:20px; font-weight:700;">${message.from}</div>
+            <div class="muted" style="font-size:12px; margin-top:2px;">Aktiv</div>
+          </div>
+          <button class="pill" id="backToMessages" style="min-width:100px;">Zurück</button>
+        </div>
+        <div style="flex:1; padding:16px; overflow:auto;">
+          <div style="margin-bottom:12px;">
+            <div style="background:#1a3a50; padding:12px; border-radius:12px; max-width:70%; margin-bottom:8px;">
+              ${message.text}
+            </div>
+            <div class="muted" style="font-size:11px;">${message.time}</div>
+          </div>
+          <div style="margin-bottom:12px; display:flex; justify-content:flex-end;">
+            <div>
+              <div style="background:#08a0f7; color:#00131c; padding:12px; border-radius:12px; max-width:70%; margin-bottom:8px;">
+                Ok, verstanden!
+              </div>
+              <div class="muted" style="font-size:11px; text-align:right;">Jetzt</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:16px; border-top:1px solid #505353; display:flex; gap:12px;">
+          <input type="text" placeholder="Nachricht eingeben..." style="flex:1; background:#232525; border:1px solid #505353; padding:12px; border-radius:10px; color:#e8f3ff; font-size:16px;">
+          <button class="pill" style="min-width:100px;">Senden</button>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('backToMessages').addEventListener('click', ()=>{
+      renderMessage();
+    });
+  }
 }
 
 function renderSettings(){
@@ -1822,6 +1923,8 @@ function renderBluetooth(){
       try{ updateTopbarBluetooth(); }catch(e){}
       // refresh Phone UI if it's currently open (so it can switch between fallback and contacts view)
       try{ refreshPhoneUI(); }catch(e){}
+      // refresh Message UI if it's currently open
+      try{ refreshMessageUI(); }catch(e){}
       inner.querySelectorAll('.row-item').forEach(row=>{
         const rowBtn = row.querySelector('button');
         const p = row.dataset.phone;
@@ -1844,6 +1947,15 @@ function refreshPhoneUI(){
   if(!phoneAppOpen) return; // not currently open, skip
   // re-render the phone submenu with updated BT status
   renderPhone();
+}
+
+// Global function to refresh Message UI if it's currently open
+// This is called when Bluetooth connection status changes, so Messages can switch views
+function refreshMessageUI(){
+  const titleEl = document.querySelector('#toolbar #title');
+  const msgAppOpen = titleEl && titleEl.textContent.includes('Nachricht');
+  if(!msgAppOpen) return;
+  renderMessage();
 }
 
 /* ===== Start mit Kacheln ===== */
