@@ -1006,6 +1006,9 @@ function renderPhone(){
 function renderMessage(){
   const pad=document.getElementById("padArea");
   
+  // Track if we're in message view (to handle back button correctly)
+  let inMessageView = false;
+  
   // If no Bluetooth device connected, show simple fallback with button to open Bluetooth panel
   const BT_KEY = 'bluetooth_active_v1';
   const active = localStorage.getItem(BT_KEY) || null;
@@ -1046,84 +1049,136 @@ function renderMessage(){
     { from: 'Peter Lang', text: 'Bis später', time: 'Mo', unread: false }
   ];
 
-  pad.innerHTML = `
-    <div class="pad-toolbar"><div style="font-weight:700;">Nachrichten</div></div>
-    <div class="pad-content"><div id="msgContent" style="position:absolute; inset:0;"><div id="list" class="scroll"><div class="inner"></div></div></div></div>`;
-  
-  const list=pad.querySelector("#list");
-  if(!list){ console.warn("renderMessage: list container not found"); return; }
-  const inner=list.querySelector(".inner");
-  if(!inner){ console.warn("renderMessage: inner element not found"); return; }
-  
-  // Populate messages immediately
-  inner.innerHTML = messages.map((msg, idx)=>`
-    <div class="row-item" style="display:flex; justify-content:space-between; align-items:center; ${msg.unread ? 'background:#0e2533;' : ''}" data-msg-idx="${idx}">
-      <div style="flex:1;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <div style="font-weight:${msg.unread ? '700' : '600'};">${msg.from}</div>
-          <div class="muted" style="font-size:12px;">${msg.time}</div>
+  function renderMessageList(){
+    // Update toolbar title and back button
+    const toolbar = document.getElementById('toolbar');
+    if(toolbar){
+      document.getElementById("title").textContent = "Nachrichten";
+      document.getElementById("inappBack").onclick = renderHome;
+    }
+    
+    pad.innerHTML = `<div id="msgContent" style="position:absolute; inset:0;"><div id="list" class="scroll"><div class="inner"></div></div></div>`;
+    
+    const list=pad.querySelector("#list");
+    if(!list){ console.warn("renderMessage: list container not found"); return; }
+    const inner=list.querySelector(".inner");
+    if(!inner){ console.warn("renderMessage: inner element not found"); return; }
+    
+    // Populate messages immediately - removed buttons, entire row is clickable
+    inner.innerHTML = messages.map((msg, idx)=>`
+      <div class="row-item" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" data-msg-idx="${idx}">
+        <div style="flex:1;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <div style="font-weight:600;">${msg.from}</div>
+            <div class="muted" style="font-size:12px;">${msg.time}</div>
+          </div>
+          <div class="muted" style="font-size:14px;">${msg.text}</div>
         </div>
-        <div class="muted" style="font-size:14px;">${msg.text}</div>
       </div>
-      <button class="pill" data-msg-idx="${idx}" style="min-width:100px; margin-left:12px;">Öffnen</button>
-    </div>
-  `).join("");
-  
-  // Add message open handlers
-  inner.querySelectorAll('[data-msg-idx]').forEach(btn=>{
-    if(btn.tagName === 'BUTTON'){
-      btn.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        const idx = parseInt(btn.dataset.msgIdx);
+    `).join("");
+    
+    // Add click handlers to entire row
+    inner.querySelectorAll('[data-msg-idx]').forEach(row=>{
+      row.addEventListener('click', (e)=>{
+        const idx = parseInt(row.dataset.msgIdx);
         const message = messages[idx];
         showMessageView(message);
       });
-    }
-  });
-  
-  makeInertiaScroll(list);
+    });
+    
+    makeInertiaScroll(list);
+  }
   
   // Function to show message conversation view
   function showMessageView(message){
+    inMessageView = true;
     const msgContent = document.getElementById('msgContent');
     if(!msgContent) return;
     
-    msgContent.innerHTML = `
-      <div style="display:flex; flex-direction:column; height:100%;">
-        <div style="padding:16px; border-bottom:1px solid #505353; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-size:20px; font-weight:700;">${message.from}</div>
-            <div class="muted" style="font-size:12px; margin-top:2px;">Aktiv</div>
-          </div>
-          <button class="pill" id="backToMessages" style="min-width:100px;">Zurück</button>
-        </div>
-        <div style="flex:1; padding:16px; overflow:auto;">
-          <div style="margin-bottom:12px;">
-            <div style="background:#1a3a50; padding:12px; border-radius:12px; max-width:70%; margin-bottom:8px;">
-              ${message.text}
-            </div>
-            <div class="muted" style="font-size:11px;">${message.time}</div>
-          </div>
-          <div style="margin-bottom:12px; display:flex; justify-content:flex-end;">
-            <div>
-              <div style="background:#08a0f7; color:#00131c; padding:12px; border-radius:12px; max-width:70%; margin-bottom:8px;">
-                Ok, verstanden!
-              </div>
-              <div class="muted" style="font-size:11px; text-align:right;">Jetzt</div>
-            </div>
-          </div>
-        </div>
-        <div style="padding:16px; border-top:1px solid #505353; display:flex; gap:12px;">
-          <input type="text" placeholder="Nachricht eingeben..." style="flex:1; background:#232525; border:1px solid #505353; padding:12px; border-radius:10px; color:#e8f3ff; font-size:16px;">
-          <button class="pill" style="min-width:100px;">Senden</button>
-        </div>
-      </div>
-    `;
+    // Update back button to go back to message list
+    document.getElementById("inappBack").onclick = renderMessageList;
+    document.getElementById("title").textContent = message.from;
     
-    document.getElementById('backToMessages').addEventListener('click', ()=>{
-      renderMessage();
-    });
+    // Store sent messages for this conversation
+    if(!message.sentMessages) message.sentMessages = [];
+    
+    function renderChat(){
+      msgContent.innerHTML = `
+        <div style="display:flex; flex-direction:column; height:100%;">
+          <div id="chatMessages" style="flex:1; padding:16px; overflow:auto;">
+            <div style="margin-bottom:12px;">
+              <div style="background:#1a3a50; padding:12px; border-radius:12px; max-width:80%; margin-bottom:8px;">
+                ${message.text}
+              </div>
+              <div class="muted" style="font-size:11px;">${message.time}</div>
+            </div>
+            <div style="margin-bottom:12px; display:flex; justify-content:flex-end;">
+              <div>
+                <div style="background:#08a0f7; color:#00131c; padding:14px 16px; border-radius:12px; max-width:80%; margin-bottom:8px;">
+                  Ok, verstanden!
+                </div>
+                <div class="muted" style="font-size:11px; text-align:right;">Jetzt</div>
+              </div>
+            </div>
+            ${message.sentMessages.map(msg => `
+              <div style="margin-bottom:12px; display:flex; justify-content:flex-end;">
+                <div>
+                  <div style="background:#08a0f7; color:#00131c; padding:14px 16px; border-radius:12px; max-width:80%; margin-bottom:8px;">
+                    ${msg.text}
+                  </div>
+                  <div class="muted" style="font-size:11px; text-align:right;">${msg.time}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div style="padding:16px; border-top:1px solid #505353; display:flex; gap:12px;">
+            <input id="msgInput" type="text" placeholder="Nachricht eingeben..." style="flex:1; background:#232525; border:1px solid #505353; padding:12px; border-radius:10px; color:#e8f3ff; font-size:16px;">
+            <button id="sendBtn" class="pill" style="min-width:100px;">Senden</button>
+          </div>
+        </div>
+      `;
+      
+      // Add send functionality
+      const input = document.getElementById('msgInput');
+      const sendBtn = document.getElementById('sendBtn');
+      
+      function sendMessage(){
+        const text = input.value.trim();
+        if(!text) return;
+        
+        const now = new Date();
+        const timeStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+        
+        message.sentMessages.push({
+          text: text,
+          time: timeStr
+        });
+        
+        // Update the last message text and time in the message list
+        message.text = text;
+        message.time = timeStr;
+        
+        input.value = '';
+        renderChat();
+        
+        // Scroll to bottom
+        setTimeout(() => {
+          const chatDiv = document.getElementById('chatMessages');
+          if(chatDiv) chatDiv.scrollTop = chatDiv.scrollHeight;
+        }, 0);
+      }
+      
+      sendBtn.onclick = sendMessage;
+      input.onkeypress = (e) => {
+        if(e.key === 'Enter') sendMessage();
+      };
+    }
+    
+    renderChat();
   }
+  
+  // Initially show message list
+  renderMessageList();
 }
 
 function renderSettings(){
