@@ -1277,30 +1277,52 @@ function renderMusic(){
     const song = songs[musicState.currentTrackIdx];
     dragDuration = song.duration * 60;
     if(!barBg) return;
-    barBg.addEventListener('pointerdown', e => {
-      dragging = true;
-      dragStartX = e.clientX;
-      dragBarWidth = barBg.offsetWidth;
-      barBg.setPointerCapture(e.pointerId);
-      updateBarFromEvent(e);
-    });
-    barBg.addEventListener('pointermove', e => {
-      if(!dragging) return;
-      updateBarFromEvent(e);
-    });
-    barBg.addEventListener('pointerup', e => {
-      dragging = false;
-      barBg.releasePointerCapture(e.pointerId);
-    });
+    
     function updateBarFromEvent(e){
       const rect = barBg.getBoundingClientRect();
-      let x = e.clientX - rect.left;
-      x = Math.max(0, Math.min(dragBarWidth, x));
-      const percent = x / dragBarWidth;
+      let x = (e.clientX || e.touches?.[0]?.clientX || 0) - rect.left;
+      x = Math.max(0, Math.min(rect.width, x));
+      const percent = x / rect.width;
       musicState.progressSec = Math.round(percent * dragDuration);
       saveMusicState(musicState);
       updateProgressBar();
     }
+    
+    // Touch Events (besser für iPad)
+    barBg.addEventListener('touchstart', e => {
+      dragging = true;
+      updateBarFromEvent(e);
+    }, { passive: false });
+    
+    barBg.addEventListener('touchmove', e => {
+      if(!dragging) return;
+      e.preventDefault(); // Verhindert Scrollen während Drag
+      updateBarFromEvent(e);
+    }, { passive: false });
+    
+    barBg.addEventListener('touchend', e => {
+      dragging = false;
+    });
+    
+    // Mouse Events (für Desktop)
+    barBg.addEventListener('mousedown', e => {
+      dragging = true;
+      updateBarFromEvent(e);
+    });
+    
+    barBg.addEventListener('mousemove', e => {
+      if(!dragging) return;
+      updateBarFromEvent(e);
+    });
+    
+    barBg.addEventListener('mouseup', e => {
+      dragging = false;
+    });
+    
+    // Globaler mouseup falls Maus außerhalb losgelassen wird
+    document.addEventListener('mouseup', () => {
+      if(dragging) dragging = false;
+    });
   }
 
   // Fortschritt updaten beim Songwechsel/Play
