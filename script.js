@@ -133,11 +133,11 @@ const TASKS = [
   },
   {
     id: 5,
-    text: "Verbinde das iPhone SE von Julia mit Bluetooth und rufe Hanna Klein an",
+    text: "Verbinde das iPhone SE von Julia mit Bluetooth und rufe Hannah Klein an",
     check: () => {
       const btActive = localStorage.getItem('bluetooth_active_v1');
       const phoneState = localStorage.getItem('phone_call_active');
-      return btActive === 'iPhone SE (Julia)' && phoneState === 'Hanna Klein';
+      return btActive === 'iPhone SE – Julia' && phoneState === 'Hannah Klein';
     }
   },
   {
@@ -205,7 +205,7 @@ function loadTestDefaults() {
   };
   localStorage.setItem('seats_state_v1', JSON.stringify(seatsState));
   
-  // Task 5: Erwartet iPhone SE (Julia) verbunden + Anruf mit Hanna Klein
+  // Task 5: Erwartet iPhone SE – Julia verbunden + Anruf mit Hannah Klein
   localStorage.removeItem('bluetooth_active_v1');
   localStorage.removeItem('phone_call_active');
   
