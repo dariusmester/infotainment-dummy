@@ -90,6 +90,9 @@ const TAP_THRESHOLD_PX = 26; // ~5mm bei typischen Displays
 const appContent = document.getElementById("appContent");
 const instruction = document.getElementById("instruction");
 const featuresArea = document.getElementById("featuresArea");
+// Farben für Aufgaben-Feedback
+const INSTRUCTION_DEFAULT_COLOR = getComputedStyle(instruction).color;
+const INSTRUCTION_SUCCESS_COLOR = "#21c45a"; // Grün während 1s Bestätigungsphase
 
 /* ===== Aufgaben Definition ===== */
 const TASKS = [
@@ -242,8 +245,16 @@ function loadTestDefaults() {
 }
 
 function updateTaskDisplay() {
-  if (!isSessionActive || currentTaskIndex >= TASKS.length) {
+  // immer Standardfarbe setzen, außer die 1s-Phase färbt sie grün
+  instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
+
+  if (!isSessionActive) {
     instruction.textContent = "Tippe eine Kachel an, um das Untermenü zu öffnen.";
+    return;
+  }
+
+  if (currentTaskIndex >= TASKS.length) {
+    instruction.textContent = "Alle Aufgaben abgeschlossen";
     return;
   }
   
@@ -265,26 +276,36 @@ function checkTaskCompletion() {
     if (taskStateStartTime === null) {
       // Zustand wurde gerade korrekt → Timer starten
       taskStateStartTime = Date.now();
+      // Visuelles Feedback: Grün während der Wartezeit
+      instruction.style.color = INSTRUCTION_SUCCESS_COLOR;
     } else {
       // Prüfen, ob Zustand seit 1 Sekunde korrekt ist
       const elapsed = Date.now() - taskStateStartTime;
       if (elapsed >= 1000) {
         // Task ist erfüllt!
         taskStateStartTime = null;
+        // Farbe zurücksetzen
+        instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
         currentTaskIndex++;
         updateTaskDisplay();
         
         if (currentTaskIndex >= TASKS.length) {
+          // Kurzer Delay, damit Text sichtbar wird, dann Auto-Export starten
           setTimeout(() => {
-            alert('Alle Aufgaben abgeschlossen! 🎉');
-            instruction.textContent = "Alle Aufgaben erfüllt!";
-          }, 500);
+            instruction.textContent = "Alle Aufgaben abgeschlossen";
+            try { exportAllData(); } catch(e) { console.error(e); }
+          }, 300);
         }
+      } else {
+        // Noch in der 1s-Phase: grün halten
+        instruction.style.color = INSTRUCTION_SUCCESS_COLOR;
       }
     }
   } else {
     // Zustand ist nicht korrekt → Timer zurücksetzen
     taskStateStartTime = null;
+    // Farbe zurück auf Standard
+    instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
   }
 }
 
@@ -303,6 +324,8 @@ document.getElementById("toggleSession").onclick = ()=>{
     currentTaskIndex = 0;
     taskStateStartTime = null;
     document.getElementById("toggleSession").textContent = "Start Session";
+    // Farbe zurücksetzen
+    instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
     updateTaskDisplay();
   } else {
     // Session starten
@@ -313,6 +336,8 @@ document.getElementById("toggleSession").onclick = ()=>{
     currentTaskIndex = 0;
     taskStateStartTime = null;
     document.getElementById("toggleSession").textContent = "End Session";
+    // Farbe zurücksetzen
+    instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
     updateTaskDisplay();
     if(featuresArea) featuresArea.textContent=""; 
   }
