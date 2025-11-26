@@ -1216,15 +1216,19 @@ function renderMusic(){
   
   function showPlaylist(){
     const body = document.getElementById("musicBody");
-    body.innerHTML = `<div id="list" class="scroll"><div class="inner"></div></div>`;
-    const list = body.querySelector("#list"), inner = list.querySelector(".inner");
+    if (!body) {
+      console.error("musicBody not found!");
+      return;
+    }
+    body.innerHTML = `<div id="musicList" style="position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;"><div class="inner" style="position:relative;"></div></div>`;
+    const list = body.querySelector("#musicList"), inner = list.querySelector(".inner");
     inner.innerHTML = songs.map((song, idx) => `
-      <div class="row-item" data-idx="${idx}" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; ${musicState.currentTrackIdx === idx ? 'background:#08a0f7; color:#00131c; font-weight:bold;' : ''}">
-        <div>
-          <div>${song.title}</div>
-          <div class="muted">${song.artist}</div>
+      <div class="row-item" data-idx="${idx}" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; padding:12px 14px; border-bottom:1px solid #0f2939; ${musicState.currentTrackIdx === idx ? 'background:#08a0f7; color:#00131c; font-weight:bold;' : ''}">
+        <div style="min-width:0; flex:1;">
+          <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.title}</div>
+          <div class="muted" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.artist}</div>
         </div>
-        <span class="muted">${song.duration.toFixed(2)} min</span>
+        <span class="muted" style="flex-shrink:0; margin-left:12px;">${song.duration.toFixed(2)} min</span>
       </div>
     `).join("");
     
@@ -1240,7 +1244,7 @@ function renderMusic(){
       showPlaylist(); // Playlist neu rendern für Hervorhebung
     });
     
-    makeInertiaScroll(list);
+    // Natives Scrolling auf iPad - kein makeInertiaScroll benötigt
   }
   // Fortschrittsbalken steuern
   function updateProgressBar(){
