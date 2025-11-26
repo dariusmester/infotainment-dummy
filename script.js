@@ -942,15 +942,24 @@ function renderMusic(){
   pad.innerHTML = `
     <div id="musicWrapper" style="position:absolute; inset:0; display:flex; flex-direction:column; gap:0;">
       <div class="pad-content" id="musicBody" style="position:relative; inset:auto; flex:1; overflow:hidden;"></div>
-      <div id="musicFooter" style="display:flex; gap:12px; padding:16px; border-top:1px solid #3a4245; flex-shrink:0; align-items:center;">
-        <div id="currentSongInfo" style="flex:1; font-size:14px; min-width:0;">
-          <div id="songTitle" style="font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Midnight Echo</div>
-          <div id="songArtist" style="color:#9fb0bf; font-size:12px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Lunar Waves</div>
+      <div id="musicFooter" style="display:flex; flex-direction:column; gap:8px; padding:16px; border-radius:12px; border-top:1px solid #3a4245; flex-shrink:0; align-items:stretch; background:#18232b;">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div id="currentSongInfo" style="flex:1; font-size:14px; min-width:0;">
+            <div id="songTitle" style="font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Midnight Echo</div>
+            <div id="songArtist" style="color:#9fb0bf; font-size:12px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Lunar Waves</div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+            <button id="prevBtn" class="pill" style="width:50px;">⏮︎</button>
+            <button id="playPauseBtn" class="pill" style="width:50px;">${musicState.isPlaying ? '⏸︎' : '⏯︎'}</button>
+            <button id="nextBtn" class="pill" style="width:50px;">⏭︎</button>
+          </div>
         </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
-          <button id="prevBtn" class="pill" style="width:50px;">⏮︎</button>
-          <button id="playPauseBtn" class="pill" style="width:50px;">${musicState.isPlaying ? '⏸︎' : '⏯︎'}</button>
-          <button id="nextBtn" class="pill" style="width:50px;">⏭︎</button>
+        <div id="progressBarWrapper" style="width:100%; height:32px; display:flex; align-items:center;">
+          <div id="progressBarBg" style="position:relative; flex:1; height:8px; background:#2a3a4a; border-radius:6px; cursor:pointer;">
+            <div id="progressBarFg" style="position:absolute; left:0; top:0; height:8px; background:#08a0f7; border-radius:6px; width:0%;"></div>
+            <div id="progressThumb" style="position:absolute; top:-4px; left:0; width:16px; height:16px; background:#08a0f7; border-radius:50%; box-shadow:0 0 4px #08a0f7; pointer-events:none; display:none;"></div>
+          </div>
+          <div id="progressTime" style="margin-left:12px; color:#9fb0bf; font-size:13px; min-width:60px; text-align:right;"></div>
         </div>
       </div>
     </div>
@@ -996,7 +1005,7 @@ function renderMusic(){
     body.innerHTML = `<div id="list" class="scroll"><div class="inner"></div></div>`;
     const list = body.querySelector("#list"), inner = list.querySelector(".inner");
     inner.innerHTML = songs.map((song, idx) => `
-      <div class="row-item" data-idx="${idx}" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; ${musicState.currentTrackIdx === idx ? 'background:#1a3a50; font-weight:bold;' : ''}">
+      <div class="row-item" data-idx="${idx}" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; ${musicState.currentTrackIdx === idx ? 'background:#08a0f7; color:#00131c; font-weight:bold;' : ''}">
         <div>
           <div>${song.title}</div>
           <div class="muted">${song.artist}</div>
@@ -1014,10 +1023,90 @@ function renderMusic(){
       saveMusicState(musicState);
       updatePlayButton();
       updateSongInfo();
+      showPlaylist(); // Playlist neu rendern für Hervorhebung
     });
     
     makeInertiaScroll(list);
   }
+  // Fortschrittsbalken steuern
+  function updateProgressBar(){
+    const song = songs[musicState.currentTrackIdx];
+    const duration = song.duration * 60; // Sekunden
+    const percent = Math.max(0, Math.min(1, musicState.progressSec / duration));
+    const fg = document.getElementById('progressBarFg');
+    const thumb = document.getElementById('progressThumb');
+    const time = document.getElementById('progressTime');
+    if(fg) fg.style.width = (percent * 100) + '%';
+    if(thumb) {
+      thumb.style.left = `calc(${percent * 100}% - 8px)`;
+      thumb.style.display = 'block';
+    }
+    if(time) {
+      const min = Math.floor(musicState.progressSec / 60);
+      const sec = Math.floor(musicState.progressSec % 60);
+      const minT = Math.floor(duration / 60);
+      const secT = Math.floor(duration % 60);
+      time.textContent = `${min}:${sec.toString().padStart(2,'0')} / ${minT}:${secT.toString().padStart(2,'0')}`;
+    }
+  }
+
+  // Drag/Wisch auf Fortschrittsbalken
+  let dragging = false;
+  let dragStartX = 0;
+  let dragBarWidth = 0;
+  let dragDuration = 0;
+  function setupProgressBar(){
+    const barBg = document.getElementById('progressBarBg');
+    const song = songs[musicState.currentTrackIdx];
+    dragDuration = song.duration * 60;
+    if(!barBg) return;
+    barBg.addEventListener('pointerdown', e => {
+      dragging = true;
+      dragStartX = e.clientX;
+      dragBarWidth = barBg.offsetWidth;
+      barBg.setPointerCapture(e.pointerId);
+      updateBarFromEvent(e);
+    });
+    barBg.addEventListener('pointermove', e => {
+      if(!dragging) return;
+      updateBarFromEvent(e);
+    });
+    barBg.addEventListener('pointerup', e => {
+      dragging = false;
+      barBg.releasePointerCapture(e.pointerId);
+    });
+    function updateBarFromEvent(e){
+      const rect = barBg.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      x = Math.max(0, Math.min(dragBarWidth, x));
+      const percent = x / dragBarWidth;
+      musicState.progressSec = Math.round(percent * dragDuration);
+      saveMusicState(musicState);
+      updateProgressBar();
+    }
+  }
+
+  // Fortschritt updaten beim Songwechsel/Play
+  function tick(){
+    if(musicState.isPlaying){
+      const song = songs[musicState.currentTrackIdx];
+      const duration = song.duration * 60;
+      musicState.progressSec = Math.min(duration, musicState.progressSec + 1);
+      if(musicState.progressSec >= duration){
+        musicState.isPlaying = false;
+      }
+      saveMusicState(musicState);
+      updateProgressBar();
+    }
+    setTimeout(tick, 1000);
+  }
+
+  // Initialisieren
+  updateSongInfo();
+  showPlaylist();
+  updateProgressBar();
+  setupProgressBar();
+  tick();
   
   // Initialize with current song info and show playlist
   updateSongInfo();
