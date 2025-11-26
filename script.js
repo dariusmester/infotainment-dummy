@@ -417,24 +417,19 @@ const touchInputLog = []; // Detailliertes Log für JSON-Export
 
 appContent.addEventListener("pointerdown", e=>{
   if(!isSessionActive) return;
-  try {
-    appContent.setPointerCapture(e.pointerId);
-  } catch(err) {
-    // Capture kann auf manchen Geräten fehlschlagen, ignorieren
-  }
   const now = Date.now();
   ongoing.set(e.pointerId, { 
     downTime: now, 
     downPos: { x: e.clientX, y: e.clientY },
     points:[{x:e.clientX,y:e.clientY,t:now}] 
   });
-});
+}, {passive: true});
 appContent.addEventListener("pointermove", e=>{
   if(!isSessionActive) return;
   const s=ongoing.get(e.pointerId); if(!s) return;
   s.points.push({x:e.clientX,y:e.clientY,t:Date.now()});
-});
-["pointerup","pointercancel","lostpointercapture"].forEach(ev=>appContent.addEventListener(ev, onUpCancel));
+}, {passive: true});
+["pointerup","pointercancel","lostpointercapture"].forEach(ev=>appContent.addEventListener(ev, onUpCancel, {passive: true}));
 
 function onUpCancel(e){
   if(!isSessionActive) return;
