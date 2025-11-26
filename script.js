@@ -439,6 +439,7 @@ function onUpCancel(e){
   const durationMs = s.upTime - s.downTime;
   
   const directionChanges = isTap ? 0 : calcDirectionChanges(s.points);
+  const pathDeviation = isTap ? 0 : calcPathDeviation(s.points);
   
   // Aktuelle Funktion ermitteln (welche App/View ist aktiv)
   const currentFunction = getCurrentFunction();
@@ -450,7 +451,7 @@ function onUpCancel(e){
     downISO:new Date(s.downTime).toISOString(), upISO:new Date(s.upTime).toISOString(),
     durationMs, lengthPx:Math.round(lengthPx),
     isTap, type: isTap ? "tap" : "swipe",
-    pointsCount: s.points.length
+    pathDeviationPx: Math.round(pathDeviation)
   });
   
   // Detailliertes Log für JSON-Export
@@ -476,7 +477,7 @@ function onUpCancel(e){
     duration_ms: durationMs,
     length_px: Math.round(lengthPx),
     direction_changes: directionChanges,
-    points_count: s.points.length
+    path_deviation_px: Math.round(pathDeviation)
   });
   
   ongoing.delete(e.pointerId);
@@ -522,6 +523,41 @@ function calcDirectionChanges(pts){
   }
   
   return changes;
+}
+
+function calcPathDeviation(pts){
+  // Berechnet die durchschnittliche Abweichung von der idealen geraden Linie
+  // zwischen Start- und Endpunkt
+  if(pts.length < 3) return 0;
+  
+  const start = pts[0];
+  const end = pts[pts.length - 1];
+  
+  // Direktdistanz zwischen Start und End
+  const directDist = Math.hypot(end.x - start.x, end.y - start.y);
+  
+  // Wenn Start und End fast identisch sind, keine sinnvolle Linie
+  if(directDist < 5) return 0;
+  
+  let totalDeviation = 0;
+  
+  // Berechne für jeden Punkt die Distanz zur idealen Linie
+  for(let i=1; i<pts.length-1; i++){
+    const p = pts[i];
+    
+    // Distanz von Punkt p zur Linie zwischen start und end
+    // Formel: |ax + by + c| / sqrt(a² + b²)
+    // Linie: (end.y - start.y)x - (end.x - start.x)y + (end.x*start.y - end.y*start.x) = 0
+    const a = end.y - start.y;
+    const b = -(end.x - start.x);
+    const c = end.x * start.y - end.y * start.x;
+    
+    const distance = Math.abs(a * p.x + b * p.y + c) / Math.sqrt(a * a + b * b);
+    totalDeviation += distance;
+  }
+  
+  // Durchschnittliche Abweichung
+  return pts.length > 2 ? totalDeviation / (pts.length - 2) : 0;
 }
 
 function getCurrentFunction(){
@@ -591,7 +627,7 @@ function round3(x){ return Math.round(x*1000)/1000; }
 function appendFeatures(header,row){ if(!featuresArea.textContent.trim()){ featuresArea.textContent = header+"\n"+row; } else { featuresArea.textContent += "\n"+row; } }
 function exportGesturesCSV(){
   if(!gestures.length){ alert("Keine Gesten-Daten."); return; }
-  const header=["task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pointsCount"];
+  const header=["task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx"];
   const rows=gestures.map(g=>header.map(h=>formatCSV(g[h])).join(","));
   downloadCSV("touch_gestures.csv", header.join(",")+"\n"+rows.join("\n"));
 }
