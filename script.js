@@ -417,7 +417,11 @@ const touchInputLog = []; // Detailliertes Log für JSON-Export
 
 appContent.addEventListener("pointerdown", e=>{
   if(!isSessionActive) return;
-  appContent.setPointerCapture(e.pointerId);
+  try {
+    appContent.setPointerCapture(e.pointerId);
+  } catch(err) {
+    // Capture kann auf manchen Geräten fehlschlagen, ignorieren
+  }
   const now = Date.now();
   ongoing.set(e.pointerId, { 
     downTime: now, 
@@ -426,20 +430,31 @@ appContent.addEventListener("pointerdown", e=>{
   });
 });
 appContent.addEventListener("pointermove", e=>{
+  if(!isSessionActive) return;
   const s=ongoing.get(e.pointerId); if(!s) return;
   s.points.push({x:e.clientX,y:e.clientY,t:Date.now()});
 });
 ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>appContent.addEventListener(ev, onUpCancel));
 
 function onUpCancel(e){
+  if(!isSessionActive) return;
   const s=ongoing.get(e.pointerId); if(!s) return;
   s.upTime=Date.now();
   const lengthPx = calcStrokeLength(s.points);
   const isTap = lengthPx <= TAP_THRESHOLD_PX;
   const durationMs = s.upTime - s.downTime;
   
+  // Berechne direkte Distanz zwischen Start und End
+  const directDistancePx = isTap ? 0 : Math.hypot(
+    e.clientX - s.downPos.x,
+    e.clientY - s.downPos.y
+  );
+  
   const directionChanges = isTap ? 0 : calcDirectionChanges(s.points);
   const pathDeviation = isTap ? 0 : calcPathDeviation(s.points);
+  
+  // Berechne Min/Max Geschwindigkeit
+  const speedStats = isTap ? { min: 0, max: 0 } : calcSpeedMinMax(s.points);
   
   // Aktuelle Funktion ermitteln (welche App/View ist aktiv)
   const currentFunction = getCurrentFunction();
@@ -451,7 +466,10 @@ function onUpCancel(e){
     downISO:new Date(s.downTime).toISOString(), upISO:new Date(s.upTime).toISOString(),
     durationMs, lengthPx:Math.round(lengthPx),
     isTap, type: isTap ? "tap" : "swipe",
-    pathDeviationPx: Math.round(pathDeviation)
+    pathDeviationPx: Math.round(pathDeviation),
+    directDistancePx: Math.round(directDistancePx),
+    minSpeedPxMs: Number(speedStats.min.toFixed(3)),
+    maxSpeedPxMs: Number(speedStats.max.toFixed(3))
   });
   
   // Detailliertes Log für JSON-Export
@@ -476,8 +494,11 @@ function onUpCancel(e){
     },
     duration_ms: durationMs,
     length_px: Math.round(lengthPx),
+    direct_distance_px: Math.round(directDistancePx),
     direction_changes: directionChanges,
-    path_deviation_px: Math.round(pathDeviation)
+    path_deviation_px: Math.round(pathDeviation),
+    min_speed_px_ms: Number(speedStats.min.toFixed(3)),
+    max_speed_px_ms: Number(speedStats.max.toFixed(3))
   });
   
   ongoing.delete(e.pointerId);
@@ -560,6 +581,33 @@ function calcPathDeviation(pts){
   return pts.length > 2 ? totalDeviation / (pts.length - 2) : 0;
 }
 
+function calcSpeedMinMax(pts){
+  // Berechnet Minimum- und Maximum-Geschwindigkeit zwischen aufeinanderfolgenden Punkten
+  if(pts.length < 2) return { min: 0, max: 0 };
+  
+  let minSpeed = Infinity;
+  let maxSpeed = 0;
+  
+  for(let i=1; i<pts.length; i++){
+    const dx = pts[i].x - pts[i-1].x;
+    const dy = pts[i].y - pts[i-1].y;
+    const distance = Math.hypot(dx, dy);
+    const timeDiff = pts[i].t - pts[i-1].t;
+    
+    // Vermeide Division durch 0
+    if(timeDiff > 0){
+      const speed = distance / timeDiff; // px/ms
+      minSpeed = Math.min(minSpeed, speed);
+      maxSpeed = Math.max(maxSpeed, speed);
+    }
+  }
+  
+  // Falls keine gültigen Messungen
+  if(minSpeed === Infinity) minSpeed = 0;
+  
+  return { min: minSpeed, max: maxSpeed };
+}
+
 function getCurrentFunction(){
   // Ermittelt die aktuell aktive Funktion/View
   const titleEl = document.getElementById("title");
@@ -627,7 +675,7 @@ function round3(x){ return Math.round(x*1000)/1000; }
 function appendFeatures(header,row){ if(!featuresArea.textContent.trim()){ featuresArea.textContent = header+"\n"+row; } else { featuresArea.textContent += "\n"+row; } }
 function exportGesturesCSV(){
   if(!gestures.length){ alert("Keine Gesten-Daten."); return; }
-  const header=["task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx"];
+  const header=["task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx","directDistancePx","minSpeedPxMs","maxSpeedPxMs"];
   const rows=gestures.map(g=>header.map(h=>formatCSV(g[h])).join(","));
   downloadCSV("touch_gestures.csv", header.join(",")+"\n"+rows.join("\n"));
 }
