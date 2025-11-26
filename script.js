@@ -82,6 +82,7 @@ const TASKS_CONFIG = {
 let isSessionActive = false;
 let currentTaskKey = null;
 let guidedStepIndex = 0;
+let currentTaskIndex = 0;
 
 const TAP_THRESHOLD_PX = 26; // ~5mm bei typischen Displays
 
@@ -89,18 +90,207 @@ const appContent = document.getElementById("appContent");
 const instruction = document.getElementById("instruction");
 const featuresArea = document.getElementById("featuresArea");
 
+/* ===== Aufgaben Definition ===== */
+const TASKS = [
+  {
+    id: 1,
+    text: "Wähle das Nutzerprofil von Karl Fischer",
+    check: () => {
+      const activeUser = localStorage.getItem('active_user_v1');
+      return activeUser === 'Karl Fischer';
+    }
+  },
+  {
+    id: 2,
+    text: "Spiele den Song 'Golden Hour' und spule vor bis ca. Minute 2",
+    check: () => {
+      const musicState = JSON.parse(localStorage.getItem('music_player_v1') || '{}');
+      // Golden Hour ist Index 10 in der Song-Liste
+      return musicState.currentTrackIdx === 10 && musicState.progressSec >= 110 && musicState.progressSec <= 130;
+    }
+  },
+  {
+    id: 3,
+    text: "Stelle die Klima Synchronisierung aus, die Beifahrer Temperatur auf 25° und die Gebläsestärke auf 7",
+    check: () => {
+      const climateState = JSON.parse(localStorage.getItem('climate_state_v3') || '{}');
+      return climateState.temp?.sync === false && 
+             climateState.temp?.passenger === 25 && 
+             climateState.fan?.level === 7;
+    }
+  },
+  {
+    id: 4,
+    text: "Stelle deine Massagefunktion auf Stufe 3, schalte die Sitzheizung aus und stelle die Sitzbelüftung auf Mittel",
+    check: () => {
+      const seatsState = JSON.parse(localStorage.getItem('seats_state_v1') || '{}');
+      return seatsState.driver?.massage?.strength === 3 && 
+             seatsState.driver?.heating === 0 && 
+             seatsState.driver?.ventilation === 2; // Mittel = Stufe 2
+    }
+  },
+  {
+    id: 5,
+    text: "Verbinde das iPhone SE von Julia mit Bluetooth und rufe Hanna Klein an",
+    check: () => {
+      const btActive = localStorage.getItem('bluetooth_active_v1');
+      const phoneState = localStorage.getItem('phone_call_active');
+      return btActive === 'iPhone SE (Julia)' && phoneState === 'Hanna Klein';
+    }
+  },
+  {
+    id: 6,
+    text: "Schreibe Nico Wolf 'Hallo'",
+    check: () => {
+      const messageState = localStorage.getItem('message_sent_to');
+      return messageState === 'Nico Wolf';
+    }
+  },
+  {
+    id: 7,
+    text: "Öffne den Kofferraum, stelle die Innenraumhelligkeit auf die höchste Stufe und aktiviere den Alarm",
+    check: () => {
+      const carState = JSON.parse(localStorage.getItem('car_state_v1') || '{}');
+      return carState.locks?.trunk === true && 
+             carState.lights?.interiorLevel === 100 && 
+             carState.locks?.alarm === true;
+    }
+  },
+  {
+    id: 8,
+    text: "Wähle das Fahrprofil Sport aus und stelle die Rekuperationsstärke auf die höchste Stufe",
+    check: () => {
+      const driveMode = JSON.parse(localStorage.getItem('drive_mode_v1') || '{}');
+      return driveMode.profile === 'Sport' && driveMode.regenerativeBraking === 100;
+    }
+  },
+  {
+    id: 9,
+    text: "Stelle den Abstandsregeltempomat auf die höchste Abstandsstufe und aktiviere den Spurhalteassistenten",
+    check: () => {
+      const assistState = JSON.parse(localStorage.getItem('assistants_state_v1') || '{}');
+      return assistState.acc?.distance === 3 && assistState.lka?.enabled === true;
+    }
+  }
+];
+
+// Funktion zum Laden von Test-Einstellungen, die von den Aufgaben abweichen
+function loadTestDefaults() {
+  // Task 1: Erwartet "Karl Fischer" → Setze anderen User
+  localStorage.setItem('active_user_v1', JSON.stringify({ name: "Anna Müller", color: "#ff6b9d" }));
+  
+  // Task 2: Erwartet "Golden Hour" bei ~120s → Setze anderen Song/Position
+  const musicState = {
+    isPlaying: false,
+    currentSongIndex: 0, // "Electric Dreams" statt "Golden Hour"
+    currentTime: 0,
+    volume: 70
+  };
+  localStorage.setItem('music_player_v1', JSON.stringify(musicState));
+  
+  // Task 3: Erwartet sync=false, passenger=25, fan=7 → Setze andere Werte
+  const climateState = {
+    temp: { enabled: true, driver: 22.0, passenger: 22.0, rear: 21.0, sync: true },
+    fan: { enabled: true, level: 30, acOn: true, airflow: { face: true, feet: false, windshield: false, rear: false } }
+  };
+  localStorage.setItem('climate_state_v3', JSON.stringify(climateState));
+  
+  // Task 4: Erwartet massage=3, heating=0, ventilation=2 → Setze andere Werte
+  const seatsState = {
+    driver: { enabled: true, heating: 2, ventilation: 0, lumbar: 0, massage: { strength: 1 } },
+    passenger: { enabled: true, heating: 0, ventilation: 0, lumbar: 0, massage: { strength: 3 } },
+    rear: { enabled: false, heating: 0, ventilation: 0 }
+  };
+  localStorage.setItem('seats_state_v1', JSON.stringify(seatsState));
+  
+  // Task 5: Erwartet iPhone SE (Julia) verbunden + Anruf mit Hanna Klein
+  localStorage.removeItem('bluetooth_active_v1');
+  localStorage.removeItem('phone_call_active');
+  
+  // Task 6: Erwartet Nachricht "Hallo" an Nico Wolf
+  localStorage.removeItem('message_sent_to');
+  
+  // Task 7: Erwartet trunk=true, interiorLevel=100, alarm=true → Setze andere Werte
+  const carState = {
+    locks: { locked: true, alarm: false, trunk: false },
+    lights: { headlightsAuto: true, interior: false, interiorLevel: 30 },
+    status: { charging: false, batteryPercent: 78, range: 340 },
+    drive: { gear: "P", handbrake: true }
+  };
+  localStorage.setItem('car_state_v1', JSON.stringify(carState));
+  
+  // Task 8: Erwartet profile=Sport, regenerativeBraking=100 → Setze andere Werte
+  const driveModeState = {
+    profile: "Comfort",
+    adaptiveSuspension: "Komfort",
+    steeringAssistance: "Normal",
+    regenerativeBraking: 50
+  };
+  localStorage.setItem('drive_mode_v1', JSON.stringify(driveModeState));
+  
+  // Task 9: Erwartet acc.distance=3, lka.enabled=true → Setze andere Werte
+  const assistState = {
+    acc: { enabled: true, distance: 1, maxSpeed: 130, restartAssist: true },
+    lka: { enabled: false, sensitivity: "Mittel", laneCentering: true },
+    bsm: { enabled: true, alertType: "Visuell + Ton", assistWhenMerging: true },
+    tsr: { enabled: true, warnOnOverspeed: true, offset: 5 },
+    park: { enabled: false, autoPark: false, side: "rechts" },
+    camera: { enabled: true, autoViewAtReverse: true, guidelines: "dynamisch" }
+  };
+  localStorage.setItem('assistants_state_v1', JSON.stringify(assistState));
+}
+
+function updateTaskDisplay() {
+  if (!isSessionActive || currentTaskIndex >= TASKS.length) {
+    instruction.textContent = "Tippe eine Kachel an, um das Untermenü zu öffnen.";
+    return;
+  }
+  
+  const task = TASKS[currentTaskIndex];
+  instruction.textContent = `Aufgabe ${task.id}/9: ${task.text}`;
+}
+
+function checkTaskCompletion() {
+  if (!isSessionActive || currentTaskIndex >= TASKS.length) return;
+  
+  const task = TASKS[currentTaskIndex];
+  if (task.check()) {
+    currentTaskIndex++;
+    updateTaskDisplay();
+    
+    if (currentTaskIndex >= TASKS.length) {
+      setTimeout(() => {
+        alert('Alle Aufgaben abgeschlossen! 🎉');
+        instruction.textContent = "Alle Aufgaben erfüllt!";
+      }, 500);
+    }
+  }
+}
+
+// Prüfe Aufgabenfortschritt regelmäßig
+setInterval(() => {
+  if (isSessionActive) {
+    checkTaskCompletion();
+  }
+}, 500);
+
 /* ===== Session & Export ===== */
 document.getElementById("toggleSession").onclick = ()=>{ 
   if(isSessionActive){
     // Session beenden
     isSessionActive = false;
+    currentTaskIndex = 0;
     document.getElementById("toggleSession").textContent = "Start Session";
+    updateTaskDisplay();
   } else {
     // Session starten
+    loadTestDefaults(); // Lade Test-Einstellungen, die von Aufgaben abweichen
     gestures.length=0; 
     touchInputLog.length=0;
     isSessionActive=true;
+    currentTaskIndex = 0;
     document.getElementById("toggleSession").textContent = "End Session";
+    updateTaskDisplay();
     if(featuresArea) featuresArea.textContent=""; 
   }
 };
@@ -242,7 +432,7 @@ function saveCar(s){ localStorage.setItem(CAR_KEY, JSON.stringify(s)); }
 function renderHome(){
   currentTaskKey = null;
   guidedStepIndex = 0;
-  instruction.textContent = "Wische nach links/rechts oder tippe eine Kachel.";
+  updateTaskDisplay();
 
   // in 2 Seiten splitten: 8 Kacheln auf Seite 1, Rest auf Seite 2
   const pages = [
@@ -1273,6 +1463,9 @@ function renderPhone(){
     const phoneContent = document.getElementById('phoneContent');
     if(!phoneContent) return;
     
+    // Speichere den Anruf-Status
+    localStorage.setItem('phone_call_active', contact.name);
+    
     phoneContent.innerHTML = `
       <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:24px; padding:20px;">
         <div style="font-size:28px; font-weight:700;">${contact.name}</div>
@@ -1285,6 +1478,8 @@ function renderPhone(){
     `;
     
     document.getElementById('endCall').addEventListener('click', ()=>{
+      // Lösche Anruf-Status
+      localStorage.removeItem('phone_call_active');
       // Return to contact list by re-rendering phone
       renderPhone();
     });
@@ -1445,6 +1640,11 @@ function renderMessage(){
         // Update the last message text and time in the message list
         message.text = text;
         message.time = timeStr;
+        
+        // Speichere für Aufgabe: Nachricht an Nico Wolf
+        if(message.from === 'Nico Wolf' && text.toLowerCase().includes('hallo')) {
+          localStorage.setItem('message_sent_to', 'Nico Wolf');
+        }
         
         input.value = '';
         renderChat();
