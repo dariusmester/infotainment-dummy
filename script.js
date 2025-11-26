@@ -83,32 +83,65 @@ let isSessionActive = false;
 let currentTaskKey = null;
 let guidedStepIndex = 0;
 
-const TAP_THRESHOLD_MM = 5;
-let pxPerMm = Number(localStorage.getItem("pxPerMm")) || 5.2;
+const TAP_THRESHOLD_PX = 26; // ~5mm bei typischen Displays
 
 const appContent = document.getElementById("appContent");
 const instruction = document.getElementById("instruction");
 const featuresArea = document.getElementById("featuresArea");
-const pxmmInfoEl = document.getElementById("pxmmInfo");
-function updatePxmmInfo(){ pxmmInfoEl.textContent = `px/mm ${pxPerMm.toFixed(2)}`; }
-updatePxmmInfo();
 
 /* ===== Session & Export ===== */
-document.getElementById("startSession").onclick = ()=>{ gestures.length=0; isSessionActive=true; featuresArea.textContent=""; };
-document.getElementById("endSession").onclick   = ()=>{ isSessionActive=false; };
-document.getElementById("exportCSV").onclick     = exportGesturesCSV;
-document.getElementById("exportFeatures").onclick= ()=>{ if(!featuresArea.textContent.trim()){ alert("Keine Feature-Daten."); return; } downloadCSV("touch_features.csv", featuresArea.textContent.trim()); };
-
-/* ===== Kalibrierung ===== */
-const calDialog = document.getElementById("calDialog");
-document.getElementById("calibrate").onclick = ()=>{
-  const ruler=document.getElementById("ruler"), range=document.getElementById("rulerRange"), currPx=document.getElementById("currPx"), currPxPerMm=document.getElementById("currPxPerMm");
-  const pxFor50 = Math.max(50, Math.min(800, Math.round(pxPerMm*50)));
-  range.value=String(pxFor50); ruler.style.width=pxFor50+"px"; currPx.textContent=String(pxFor50); currPxPerMm.textContent=(pxFor50/50).toFixed(2);
-  range.oninput=()=>{ const v=Number(range.value); ruler.style.width=v+"px"; currPx.textContent=String(v); currPxPerMm.textContent=(v/50).toFixed(2); };
-  calDialog.showModal();
-  document.getElementById("saveCal").onclick=()=>{ const v=Number(range.value); pxPerMm=v/50; localStorage.setItem("pxPerMm", String(pxPerMm)); updatePxmmInfo(); };
+document.getElementById("toggleSession").onclick = ()=>{ 
+  if(isSessionActive){
+    // Session beenden
+    isSessionActive = false;
+    document.getElementById("toggleSession").textContent = "Start Session";
+  } else {
+    // Session starten
+    gestures.length=0; 
+    touchInputLog.length=0;
+    isSessionActive=true;
+    document.getElementById("toggleSession").textContent = "End Session";
+    if(featuresArea) featuresArea.textContent=""; 
+  }
 };
+
+document.getElementById("exportData").onclick = exportAllData;
+
+function exportAllData(){
+  if(touchInputLog.length === 0 && gestures.length === 0){
+    alert("Keine Touch-Daten erfasst.");
+    return;
+  }
+  
+  // Export JSON
+  if(touchInputLog.length > 0){
+    const jsonData = {
+      session: {
+        start: touchInputLog[0]?.down.time || new Date().toISOString(),
+        end: touchInputLog[touchInputLog.length - 1]?.up.time || new Date().toISOString(),
+        total_inputs: touchInputLog.length
+      },
+      inputs: touchInputLog
+    };
+    
+    const json = JSON.stringify(jsonData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `touch_inputs_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  
+  // Export CSV
+  if(gestures.length > 0){
+    setTimeout(() => {
+      exportGesturesCSV();
+    }, 100);
+  }
+}
+
 /* ===== Ebene 1: Kachel-Grid mit Pager (2 Seiten) ===== */
 let homePageIndex = 0;
 
@@ -380,11 +413,17 @@ function openApp(key){
 /* ===== Pointer-Logging auf dem gesamten App-Content ===== */
 const ongoing = new Map();
 const gestures = [];
+const touchInputLog = []; // Detailliertes Log für JSON-Export
+
 appContent.addEventListener("pointerdown", e=>{
   if(!isSessionActive) return;
   appContent.setPointerCapture(e.pointerId);
   const now = Date.now();
-  ongoing.set(e.pointerId, { downTime: now, points:[{x:e.clientX,y:e.clientY,t:now}] });
+  ongoing.set(e.pointerId, { 
+    downTime: now, 
+    downPos: { x: e.clientX, y: e.clientY },
+    points:[{x:e.clientX,y:e.clientY,t:now}] 
+  });
 });
 appContent.addEventListener("pointermove", e=>{
   const s=ongoing.get(e.pointerId); if(!s) return;
@@ -396,22 +435,108 @@ function onUpCancel(e){
   const s=ongoing.get(e.pointerId); if(!s) return;
   s.upTime=Date.now();
   const lengthPx = calcStrokeLength(s.points);
-  const lengthMm = lengthPx / pxPerMm;
-  const isTap = lengthMm <= TAP_THRESHOLD_MM;
+  const isTap = lengthPx <= TAP_THRESHOLD_PX;
   const durationMs = s.upTime - s.downTime;
+  
+  const directionChanges = isTap ? 0 : calcDirectionChanges(s.points);
+  
+  // Aktuelle Funktion ermitteln (welche App/View ist aktiv)
+  const currentFunction = getCurrentFunction();
+  
   gestures.push({
     task: currentTaskKey || "home",
     stepIndex: guidedStepIndex,
     downTime:s.downTime, upTime:s.upTime,
     downISO:new Date(s.downTime).toISOString(), upISO:new Date(s.upTime).toISOString(),
     durationMs, lengthPx:Math.round(lengthPx),
-    lengthMm: isTap ? 0 : Number(lengthMm.toFixed(2)),
-    isTap, type: isTap ? "tap" : "strike",
+    isTap, type: isTap ? "tap" : "swipe",
     pointsCount: s.points.length
   });
+  
+  // Detailliertes Log für JSON-Export
+  touchInputLog.push({
+    type: isTap ? "tap" : "swipe",
+    function: currentFunction,
+    down: {
+      time: new Date(s.downTime).toISOString(),
+      timestamp: s.downTime,
+      position_px: {
+        x: Math.round(s.downPos.x),
+        y: Math.round(s.downPos.y)
+      }
+    },
+    up: {
+      time: new Date(s.upTime).toISOString(),
+      timestamp: s.upTime,
+      position_px: {
+        x: Math.round(e.clientX),
+        y: Math.round(e.clientY)
+      }
+    },
+    duration_ms: durationMs,
+    length_px: Math.round(lengthPx),
+    direction_changes: directionChanges,
+    points_count: s.points.length
+  });
+  
   ongoing.delete(e.pointerId);
 }
-function calcStrokeLength(pts){ let s=0; for(let i=1;i<pts.length;i++){ const dx=pts[i].x-pts[i-1].x, dy=pts[i].y-pts[i-1].y; s+=Math.hypot(dx,dy);} return s; }
+
+function calcStrokeLength(pts){ 
+  let s=0; 
+  for(let i=1;i<pts.length;i++){ 
+    const dx=pts[i].x-pts[i-1].x, dy=pts[i].y-pts[i-1].y; 
+    s+=Math.hypot(dx,dy);
+  } 
+  return s; 
+}
+
+function calcDirectionChanges(pts){
+  if(pts.length < 3) return 0;
+  
+  let changes = 0;
+  let prevAngle = null;
+  
+  for(let i=1; i<pts.length; i++){
+    const dx = pts[i].x - pts[i-1].x;
+    const dy = pts[i].y - pts[i-1].y;
+    const distance = Math.hypot(dx, dy);
+    
+    // Ignoriere sehr kleine Bewegungen (Rauschen)
+    if(distance < 2) continue;
+    
+    const angle = Math.atan2(dy, dx);
+    
+    if(prevAngle !== null){
+      let angleDiff = Math.abs(angle - prevAngle);
+      // Normalisiere auf 0-π
+      if(angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
+      
+      // Zähle als Richtungsänderung wenn > 30 Grad (π/6)
+      if(angleDiff > Math.PI / 6){
+        changes++;
+      }
+    }
+    
+    prevAngle = angle;
+  }
+  
+  return changes;
+}
+
+function getCurrentFunction(){
+  // Ermittelt die aktuell aktive Funktion/View
+  const titleEl = document.getElementById("title");
+  if(titleEl && titleEl.textContent.trim()){
+    return titleEl.textContent.trim();
+  }
+  
+  if(currentTaskKey){
+    return currentTaskKey;
+  }
+  
+  return "home";
+}
 
 /* ===== Features F1–F10 (Shortcut F9) ===== */
 document.addEventListener("keydown",(e)=>{ if(e.key==="F9") finishCurrentTaskRun(); });
@@ -422,25 +547,25 @@ function finishCurrentTaskRun(){
   const g = gestures.filter(x=>x.task===currentTaskKey).sort((a,b)=>a.downTime-b.downTime);
   if(!g.length){ alert("Keine Gesten für diese App."); return; }
 
-  const strikes = g.filter(x=>x.type==="strike");
+  const strikes = g.filter(x=>x.type==="swipe");
   const taps    = g.filter(x=>x.type==="tap");
   const SO = strikes.length, TO = taps.length;
 
-  const strikeLengthsMm = strikes.map(x=>x.lengthMm);
-  const strikeSpeedsMps = strikes.map(x=>{
-    const lenM=(x.lengthPx/pxPerMm)/1000, tS=x.durationMs/1000; return tS>0 ? lenM/tS : 0;
+  const strikeLengthsPx = strikes.map(x=>x.lengthPx);
+  const strikeSpeedsPxMs = strikes.map(x=>{
+    const tMs=x.durationMs; return tMs>0 ? x.lengthPx/tMs : 0;
   });
 
   const delaysMs=[]; for(let i=0;i<g.length-1;i++) delaysMs.push(Math.max(0, g[i+1].downTime - g[i].upTime));
   const turnaroundS=(g.at(-1).upTime - g[0].downTime)/1000;
 
-  const F3=computeModeSlidingWindow(strikeLengthsMm), F4=avg(strikeLengthsMm);
-  const F5=computeModeSlidingWindow(strikeSpeedsMps), F6=avg(strikeSpeedsMps);
+  const F3=computeModeSlidingWindow(strikeLengthsPx), F4=avg(strikeLengthsPx);
+  const F5=computeModeSlidingWindow(strikeSpeedsPxMs), F6=avg(strikeSpeedsPxMs);
   const F7=computeModeSlidingWindow(delaysMs),       F8=delaysMs.length?Math.round(avg(delaysMs)):0;
   const F9=Math.round((sum(delaysMs)/1000)*100)/100, F10=Math.round(turnaroundS*100)/100;
   const F1=SO-SM, F2=TO-TM;
 
-  const header="task,SO,TO,SM,TM,F1_Sdev,F2_Tdev,F3_modeStrikeLenMm,F4_avgStrikeLenMm,F5_modeStrikeSpeedMps,F6_avgStrikeSpeedMps,F7_modeDelayMs,F8_avgDelayMs,F9_totalDelayS,F10_turnaroundS";
+  const header="task,SO,TO,SM,TM,F1_Sdev,F2_Tdev,F3_modeStrikeLenPx,F4_avgStrikeLenPx,F5_modeStrikeSpeedPxMs,F6_avgStrikeSpeedPxMs,F7_modeDelayMs,F8_avgDelayMs,F9_totalDelayS,F10_turnaroundS";
   const row=[currentTaskKey,SO,TO,SM,TM,F1,F2,round2(F3),round2(F4),round3(F5),round3(F6),Math.round(F7),F8,F9,F10].join(",");
   appendFeatures(header,row);
 }
@@ -466,7 +591,7 @@ function round3(x){ return Math.round(x*1000)/1000; }
 function appendFeatures(header,row){ if(!featuresArea.textContent.trim()){ featuresArea.textContent = header+"\n"+row; } else { featuresArea.textContent += "\n"+row; } }
 function exportGesturesCSV(){
   if(!gestures.length){ alert("Keine Gesten-Daten."); return; }
-  const header=["task","stepIndex","downISO","upISO","durationMs","lengthPx","lengthMm","type","pointsCount"];
+  const header=["task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pointsCount"];
   const rows=gestures.map(g=>header.map(h=>formatCSV(g[h])).join(","));
   downloadCSV("touch_gestures.csv", header.join(",")+"\n"+rows.join("\n"));
 }
