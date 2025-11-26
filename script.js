@@ -83,6 +83,7 @@ let isSessionActive = false;
 let currentTaskKey = null;
 let guidedStepIndex = 0;
 let currentTaskIndex = 0;
+let taskStateStartTime = null; // Timestamp, wann der korrekte Zustand begonnen hat
 
 const TAP_THRESHOLD_PX = 26; // ~5mm bei typischen Displays
 
@@ -106,7 +107,8 @@ const TASKS = [
     check: () => {
       const musicState = JSON.parse(localStorage.getItem('music_player_v1') || '{}');
       // Golden Hour ist Index 10 in der Song-Liste
-      return musicState.currentTrackIdx === 10 && musicState.progressSec >= 110 && musicState.progressSec <= 130;
+      // Korrekt zwischen 1:30 (90s) und 2:30 (150s)
+      return musicState.currentTrackIdx === 10 && musicState.progressSec >= 90 && musicState.progressSec <= 150;
     }
   },
   {
@@ -251,19 +253,39 @@ function updateTaskDisplay() {
 }
 
 function checkTaskCompletion() {
-  if (!isSessionActive || currentTaskIndex >= TASKS.length) return;
+  if (!isSessionActive || currentTaskIndex >= TASKS.length) {
+    taskStateStartTime = null;
+    return;
+  }
   
   const task = TASKS[currentTaskIndex];
-  if (task.check()) {
-    currentTaskIndex++;
-    updateTaskDisplay();
-    
-    if (currentTaskIndex >= TASKS.length) {
-      setTimeout(() => {
-        alert('Alle Aufgaben abgeschlossen! 🎉');
-        instruction.textContent = "Alle Aufgaben erfüllt!";
-      }, 500);
+  const isCorrect = task.check();
+  
+  if (isCorrect) {
+    // Zustand ist korrekt
+    if (taskStateStartTime === null) {
+      // Zustand wurde gerade korrekt → Timer starten
+      taskStateStartTime = Date.now();
+    } else {
+      // Prüfen, ob Zustand seit 1 Sekunde korrekt ist
+      const elapsed = Date.now() - taskStateStartTime;
+      if (elapsed >= 1000) {
+        // Task ist erfüllt!
+        taskStateStartTime = null;
+        currentTaskIndex++;
+        updateTaskDisplay();
+        
+        if (currentTaskIndex >= TASKS.length) {
+          setTimeout(() => {
+            alert('Alle Aufgaben abgeschlossen! 🎉');
+            instruction.textContent = "Alle Aufgaben erfüllt!";
+          }, 500);
+        }
+      }
     }
+  } else {
+    // Zustand ist nicht korrekt → Timer zurücksetzen
+    taskStateStartTime = null;
   }
 }
 
@@ -280,6 +302,7 @@ document.getElementById("toggleSession").onclick = ()=>{
     // Session beenden
     isSessionActive = false;
     currentTaskIndex = 0;
+    taskStateStartTime = null;
     document.getElementById("toggleSession").textContent = "Start Session";
     updateTaskDisplay();
   } else {
@@ -289,6 +312,7 @@ document.getElementById("toggleSession").onclick = ()=>{
     touchInputLog.length=0;
     isSessionActive=true;
     currentTaskIndex = 0;
+    taskStateStartTime = null;
     document.getElementById("toggleSession").textContent = "End Session";
     updateTaskDisplay();
     if(featuresArea) featuresArea.textContent=""; 
@@ -1130,9 +1154,9 @@ function renderMusic(){
   let musicState = loadMusicState();
   
   pad.innerHTML = `
-    <div id="musicWrapper" style="position:absolute; inset:0; display:flex; flex-direction:column; gap:0;">
-      <div class="pad-content" id="musicBody" style="position:relative; inset:auto; flex:1; overflow:hidden;"></div>
-      <div id="musicFooter" style="display:flex; flex-direction:column; gap:8px; padding:16px; border-radius:12px; border-top:1px solid #3a4245; flex-shrink:0; align-items:stretch; background:#18232b;">
+    <div id="musicWrapper" style="position:absolute; inset:0; display:flex; flex-direction:column;">
+      <div class="pad-content" id="musicBody" style="position:absolute; top:0; left:0; right:0; bottom:150px; overflow:hidden;"></div>
+      <div id="musicFooter" style="position:absolute; bottom:0; left:0; right:0; height:150px; display:flex; flex-direction:column; gap:8px; padding:16px; border-radius:12px; border-top:1px solid #3a4245; background:#18232b;">
         <div style="display:flex; gap:12px; align-items:center;">
           <div id="currentSongInfo" style="flex:1; font-size:14px; min-width:0;">
             <div id="songTitle" style="font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Midnight Echo</div>
