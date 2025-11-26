@@ -162,7 +162,7 @@ const TASKS = [
     id: 8,
     text: "Wähle das Fahrprofil Sport aus und stelle die Rekuperationsstärke auf die höchste Stufe",
     check: () => {
-      const driveMode = JSON.parse(localStorage.getItem('drive_mode_v1') || '{}');
+      const driveMode = JSON.parse(localStorage.getItem('drivermode_state_v1') || '{}');
       return driveMode.profile === 'Sport' && driveMode.regenerativeBraking === 100;
     }
   },
@@ -227,7 +227,7 @@ function loadTestDefaults() {
     steeringAssistance: "Normal",
     regenerativeBraking: 50
   };
-  localStorage.setItem('drive_mode_v1', JSON.stringify(driveModeState));
+  localStorage.setItem('drivermode_state_v1', JSON.stringify(driveModeState));
   
   // Task 9: Erwartet acc.distance=3, lka.enabled=true → Setze andere Werte
   const assistState = {
