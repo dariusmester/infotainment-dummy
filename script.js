@@ -184,7 +184,7 @@ function loadTestDefaults() {
   // Task 2: Erwartet "Golden Hour" bei ~120s → Setze anderen Song/Position
   const musicState = {
     isPlaying: false,
-    currentSongIndex: 0, // "Electric Dreams" statt "Golden Hour"
+    currentSongIndex: 1, // "Electric Dreams" statt "Golden Hour"
     currentTime: 0,
     volume: 70
   };
@@ -193,7 +193,7 @@ function loadTestDefaults() {
   // Task 3: Erwartet sync=false, passenger=25, fan=7 → Setze andere Werte
   const climateState = {
     temp: { enabled: true, driver: 22.0, passenger: 22.0, rear: 21.0, sync: true },
-    fan: { enabled: true, level: 30, acOn: true, airflow: { face: true, feet: false, windshield: false, rear: false } }
+    fan: { enabled: true, level: 1, acOn: true, airflow: { face: true, feet: false, windshield: false, rear: false } }
   };
   localStorage.setItem('climate_state_v3', JSON.stringify(climateState));
   
