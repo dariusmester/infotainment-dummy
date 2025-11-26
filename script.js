@@ -181,12 +181,11 @@ function loadTestDefaults() {
   // Task 1: Erwartet "Karl Fischer" → Setze anderen User
   localStorage.setItem('active_user_v1', JSON.stringify({ name: "Anna Müller", color: "#ff6b9d" }));
   
-  // Task 2: Erwartet "Golden Hour" bei ~120s → Setze anderen Song/Position
+  // Task 2: Erwartet "Golden Hour" (Index 10) bei 90-150s → Setze anderen Song/Position
   const musicState = {
     isPlaying: false,
-    currentSongIndex: 1, // "Electric Dreams" statt "Golden Hour"
-    currentTime: 0,
-    volume: 70
+    currentTrackIdx: 0, // "Midnight Echo" statt "Golden Hour"
+    progressSec: 0
   };
   localStorage.setItem('music_player_v1', JSON.stringify(musicState));
   
