@@ -16,6 +16,7 @@
     <div id="topbar-right">
       <button id="toggleSession">Start Session</button>
       <button id="exportData">Export Daten</button>
+      <button id="resetUser">Reset</button>
     </div>
   </header>
 
@@ -33,6 +34,119 @@
   </main>
 
 
+
+  <!-- Welcome Modal - Fullscreen -->
+  <div id="welcomeModal" style="display:flex; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column;">
+    <!-- Seiten-Container -->
+    <div id="welcomePages" style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+      
+      <!-- Seite 1: Willkommen & Name -->
+      <div id="welcomePage1" class="welcomePage" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; transition:opacity 0.3s, transform 0.3s;">
+        <div style="max-width:600px; width:100%;">
+          <h1 style="margin:0 0 16px 0; font-size:36px; color:#e8f3ff; text-align:center;">Willkommen!</h1>
+          <p style="color:#9fb0bf; line-height:1.8; margin:0 0 32px 0; font-size:16px; text-align:center;">
+            Dies ist ein Infotainment-Interface zum Testen von Benutzerinteraktionen.<br><br>
+            Sie werden eine Serie von 9 Aufgaben absolvieren, die verschiedene Funktionen des Systems erfordern. 
+            Alle Ihre Touch-Eingaben und Aktionen werden für die Analyse aufgezeichnet.
+          </p>
+          <form id="welcomeForm" style="display:flex; flex-direction:column; gap:16px;">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label for="userNameInput" style="font-weight:600; color:#e8f3ff; font-size:16px;">Ihr Name:</label>
+              <input 
+                id="userNameInput" 
+                type="text" 
+                placeholder="z.B. Max Mustermann" 
+                style="padding:16px; border:1px solid #505353; border-radius:8px; background:#232525; color:#e8f3ff; font-size:16px;"
+                required
+              >
+            </div>
+            <button 
+              type="button" 
+              id="nextPageBtn1"
+              style="padding:16px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; margin-top:16px;"
+            >
+              Weiter
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Seite 2: Informationen -->
+      <div id="welcomePage2" class="welcomePage" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; overflow-y:auto;">
+        <div style="max-width:600px; width:100%;">
+          <h1 style="margin:0 0 24px 0; font-size:36px; color:#e8f3ff; text-align:center;">Wie funktioniert es?</h1>
+          <div style="color:#9fb0bf; line-height:1.8; font-size:15px; display:flex; flex-direction:column; gap:20px;">
+            <div>
+              <h3 style="color:#08a0f7; margin:0 0 8px 0;">📋 Die 9 Aufgaben</h3>
+              <p style="margin:0;">Jede Aufgabe erfordert, dass Sie bestimmte Einstellungen oder Aktionen durchführen. Die aktuelle Aufgabe wird oben auf dem Bildschirm angezeigt.</p>
+            </div>
+            <div>
+              <h3 style="color:#08a0f7; margin:0 0 8px 0;">⏱️ Bestätigung erforderlich</h3>
+              <p style="margin:0;">Wenn Sie eine Aufgabe korrekt erfüllen, wird der Text grün. Die Aufgabe muss 1 Sekunde lang grün bleiben, um als erfüllt zu gelten.</p>
+            </div>
+            <div>
+              <h3 style="color:#08a0f7; margin:0 0 8px 0;">📊 Aufzeichnung</h3>
+              <p style="margin:0;">Alle Ihre Touch-Eingaben werden automatisch aufgezeichnet. Am Ende können Sie die Daten exportieren.</p>
+            </div>
+            <div>
+              <h3 style="color:#08a0f7; margin:0 0 8px 0;">⏱️ Dauer</h3>
+              <p style="margin:0;">Die Session dauert etwa 10-15 Minuten.</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px; margin-top:32px;">
+            <button 
+              type="button" 
+              id="prevPageBtn2"
+              style="flex:1; padding:16px; background:#505353; color:#e8f3ff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;"
+            >
+              Zurück
+            </button>
+            <button 
+              type="button" 
+              id="nextPageBtn2"
+              style="flex:1; padding:16px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;"
+            >
+              Weiter
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seite 3: Datenschutz -->
+      <div id="welcomePage3" class="welcomePage" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; overflow-y:auto;">
+        <div style="max-width:600px; width:100%;">
+          <h1 style="margin:0 0 24px 0; font-size:36px; color:#e8f3ff; text-align:center;">Datenschutz</h1>
+          <div style="color:#9fb0bf; line-height:1.8; font-size:15px; display:flex; flex-direction:column; gap:20px;">
+            <div>
+              <h3 style="color:#08a0f7; margin:0 0 8px 0;">🔒 Anonyme Datenerfassung</h3>
+              <p style="margin:0;">Alle Ihre Daten werden <strong style="color:#e8f3ff;">vollständig anonym</strong> gespeichert. Ihr Name wird nicht mit den erfassten Interaktionsdaten verbunden.</p>
+            </div>
+            <div>
+              <h3 style="color:#08a0f7; margin:0 0 8px 0;"> Verwendung</h3>
+              <p style="margin:0;">Die erfassten Daten dienen ausschließlich der Forschung und Verbesserung von Benutzeroberflächen.</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px; margin-top:32px;">
+            <button 
+              type="button" 
+              id="prevPageBtn3"
+              style="flex:1; padding:16px; background:#505353; color:#e8f3ff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;"
+            >
+              Zurück
+            </button>
+            <button 
+              type="button" 
+              id="nextPageBtn3"
+              style="flex:1; padding:16px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;"
+            >
+              Starten
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- Calibration dialog -->
   <dialog id="calDialog">

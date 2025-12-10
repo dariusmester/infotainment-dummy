@@ -1,3 +1,106 @@
+/* ===== Willkommens-Formular mit Multi-Page ===== */
+function initWelcomeForm() {
+  const modal = document.getElementById("welcomeModal");
+  const nameInput = document.getElementById("userNameInput");
+  const page1 = document.getElementById("welcomePage1");
+  const page2 = document.getElementById("welcomePage2");
+  const page3 = document.getElementById("welcomePage3");
+  const nextBtn1 = document.getElementById("nextPageBtn1");
+  const prevBtn2 = document.getElementById("prevPageBtn2");
+  const nextBtn2 = document.getElementById("nextPageBtn2");
+  const prevBtn3 = document.getElementById("prevPageBtn3");
+  const nextBtn3 = document.getElementById("nextPageBtn3");
+  
+  if (!modal) {
+    console.error("Welcome modal not found!");
+    return;
+  }
+  
+  // Navigation Seite 1 → Seite 2
+  if (nextBtn1) {
+    nextBtn1.addEventListener("click", () => {
+      const userName = nameInput?.value?.trim();
+      if (!userName) {
+        alert("Bitte geben Sie Ihren Namen ein.");
+        return;
+      }
+      
+      // Name speichern
+      localStorage.setItem("user_name_v1", userName);
+      
+      // Zu Seite 2 wechseln
+      if (page1 && page2) {
+        page1.style.display = "none";
+        page2.style.display = "flex";
+      }
+    });
+  }
+  
+  // Navigation Seite 2 → Seite 1
+  if (prevBtn2) {
+    prevBtn2.addEventListener("click", () => {
+      if (page1 && page2) {
+        page2.style.display = "none";
+        page1.style.display = "flex";
+      }
+    });
+  }
+  
+  // Navigation Seite 2 → Seite 3
+  if (nextBtn2) {
+    nextBtn2.addEventListener("click", () => {
+      if (page2 && page3) {
+        page2.style.display = "none";
+        page3.style.display = "flex";
+      }
+    });
+  }
+  
+  // Navigation Seite 3 → Seite 2
+  if (prevBtn3) {
+    prevBtn3.addEventListener("click", () => {
+      if (page2 && page3) {
+        page3.style.display = "none";
+        page2.style.display = "flex";
+      }
+    });
+  }
+  
+  // Seite 3 abschließen
+  if (nextBtn3) {
+    nextBtn3.addEventListener("click", () => {
+      // Modal verbergen und zur App gehen
+      modal.style.display = "none";
+    });
+  }
+  
+  // Modal beim Laden anzeigen, wenn kein Name gespeichert
+  // Um die Seite zu testen, localStorage löschen: localStorage.removeItem("user_name_v1")
+  const savedName = localStorage.getItem("user_name_v1");
+  console.log("Saved name:", savedName);
+  
+  if (!savedName) {
+    console.log("Showing welcome modal");
+    modal.style.display = "flex";
+    if (page1 && page2 && page3) {
+      page1.style.display = "flex";
+      page2.style.display = "none";
+      page3.style.display = "none";
+    }
+  } else {
+    console.log("Hiding welcome modal, user:", savedName);
+    modal.style.display = "none";
+    if (nameInput) nameInput.value = savedName;
+  }
+}
+
+// Willkommens-Formular beim Laden initialisieren
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initWelcomeForm);
+} else {
+  initWelcomeForm();
+}
+
 /* ===== Konfiguration ===== */
 const APPS = [
   { key:"music", icon:`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 1024 1024"><path fill="#E498E0" d="M831.5 896Q752 896 696 858.5T640 768t56-90.5T832 640q31 0 64 8V269L384 371v525q0 53-56 90.5T192 1024T56 986.5T0 896t56-90.5T192 768q31 0 64 8V192q0-26 19-45t45-19L960 0q26 0 45 18.5t19 45.5v704q0 53-56.5 90.5t-136 37.5z"/></svg>`
@@ -98,10 +201,15 @@ const INSTRUCTION_SUCCESS_COLOR = "#21c45a"; // Grün während 1s Bestätigungsp
 const TASKS = [
   {
     id: 1,
-    text: "Wähle das Nutzerprofil von Karl Fischer",
+    text: "Wähle dein Nutzerprofil",
     check: () => {
+      const enteredName = localStorage.getItem('user_name_v1');
       const activeUser = localStorage.getItem('active_user_v1');
-      return activeUser === 'Karl Fischer';
+      if (!enteredName) {
+        // Fallback to Karl Fischer if no name was entered
+        return activeUser === 'Karl Fischer';
+      }
+      return activeUser === enteredName;
     }
   },
   {
@@ -181,8 +289,13 @@ const TASKS = [
 
 // Funktion zum Laden von Test-Einstellungen, die von den Aufgaben abweichen
 function loadTestDefaults() {
-  // Task 1: Erwartet "Karl Fischer" → Setze anderen User
-  localStorage.setItem('active_user_v1', JSON.stringify({ name: "Anna Müller", color: "#ff6b9d" }));
+  // Get the entered user name for Task 1
+  const enteredName = localStorage.getItem('user_name_v1') || 'Anna Müller';
+  
+  // Task 1: Use different user than the entered name (so task isn't accidentally complete)
+  // If entered name is Anna Müller, use Karl Fischer; otherwise use Anna Müller
+  const testUser = enteredName === 'Anna Müller' ? 'Karl Fischer' : 'Anna Müller';
+  localStorage.setItem('active_user_v1', testUser);
   
   // Task 2: Erwartet "Golden Hour" (Index 10) bei 90-150s → Setze anderen Song/Position
   const musicState = {
@@ -344,6 +457,40 @@ document.getElementById("toggleSession").onclick = ()=>{
 };
 
 document.getElementById("exportData").onclick = exportAllData;
+
+document.getElementById("resetUser").onclick = () => {
+  if (confirm("Möchten Sie wirklich alle Daten löschen und von vorne beginnen?")) {
+    // Alle Daten löschen
+    localStorage.removeItem("user_name_v1");
+    localStorage.removeItem("active_user_v1");
+    localStorage.removeItem("music_player_v1");
+    localStorage.removeItem("climate_state_v3");
+    localStorage.removeItem("seats_state_v1");
+    localStorage.removeItem("bluetooth_active_v1");
+    localStorage.removeItem("phone_call_active");
+    localStorage.removeItem("message_sent_to");
+    localStorage.removeItem("car_state_v1");
+    localStorage.removeItem("drivermode_state_v1");
+    localStorage.removeItem("assistants_state_v1");
+    
+    // Session-Daten zurücksetzen
+    isSessionActive = false;
+    currentTaskIndex = 0;
+    taskStateStartTime = null;
+    gestures.length = 0;
+    touchInputLog.length = 0;
+    
+    // UI zurücksetzen
+    document.getElementById("toggleSession").textContent = "Start Session";
+    instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
+    updateTaskDisplay();
+    
+    // Welcome-Modal anzeigen und Seite neuladen
+    setTimeout(() => {
+      location.reload();
+    }, 500);
+  }
+};
 
 function exportAllData(){
   if(touchInputLog.length === 0 && gestures.length === 0){
@@ -2450,20 +2597,29 @@ function renderUser(){
   // simple persistent active user key
   const ACTIVE_USER_KEY = 'active_user_v1';
   const active = localStorage.getItem(ACTIVE_USER_KEY) || null;
+  // Get entered name from welcome form
+  const enteredName = localStorage.getItem('user_name_v1');
+  
   // generate a long list of users
-  const users = [
+  const baseUsers = [
     'Alex Müller','Ben König','Carla Schmidt','David Bauer','Eva Neumann','Fabian Weber','Greta Hoffmann','Hannah Klein','Ian Schröder','Julia Lange',
     'Karl Fischer','Laura Braun','Mia Vogel','Nico Wolf','Olivia Frank','Peter Lang','Quentin Mayer','Rita Busch','Simon Roth','Tina Berg',
     'Uwe König','Vera Brandt','Willi Kern','Xenia Jansen','Yannick Otto','Zoe Richter','Anna Schwarz','Björn Koch','Celine Matheis','Darius Mester'
   ];
+  
+  // Add entered name to the beginning of the list if it exists and is not already in the list
+  let users = baseUsers;
+  if (enteredName && !baseUsers.includes(enteredName)) {
+    users = [enteredName, ...baseUsers];
+  }
 
   pad.innerHTML = `
     <div style="padding:12px; height:100%; display:flex; flex-direction:column; gap:12px;">
       <div style="font-weight:700; font-size:18px;">Nutzer</div>
       <div style="flex:1; overflow:auto; border-top:1px solid var(--secondarycolor); padding-top:8px;">
-        ${users.map(u=>`
-          <div class="row-item" data-user="${u}" style="display:flex; justify-content:space-between; align-items:center;">
-            <div>${u}</div>
+        ${users.map((u, idx)=>`
+          <div class="row-item" data-user="${u}" style="display:flex; justify-content:space-between; align-items:center; ${idx === 0 && enteredName === u ? 'background:#08a0f7; background:rgba(8,160,247,0.15); padding:8px; border-radius:6px;' : ''}">
+            <div>${u}${idx === 0 && enteredName === u ? ' <span style="color:#08a0f7; font-size:11px;">(dein Profil)</span>' : ''}</div>
             <button class="seg ${u===active? 'on' : '' }" data-user="${u}">${u===active? 'Aktiv' : 'Wählen'}</button>
           </div>
         `).join('')}
@@ -2488,11 +2644,29 @@ function renderBluetooth(){
   const pad = document.getElementById('padArea');
   const BT_KEY = 'bluetooth_active_v1';
   const active = localStorage.getItem(BT_KEY) || null;
-  const phones = [
+  // Get entered name from welcome form
+  const enteredName = localStorage.getItem('user_name_v1');
+  
+  const basePhones = [
     'iPhone 14 – Darius', 'Samsung Galaxy S23 – Anna', 'Pixel 7 – Ben', 'iPhone 12 – Carla', 'Samsung A53 – David',
     'OnePlus 10 – Eva', 'Nokia XR20 – Fabian', 'Huawei P50 – Greta', 'Xiaomi 12 – Hannah', 'Sony Xperia 5 – Ian',
     'iPhone SE – Julia', 'Moto G – Karl', 'Fairphone 4 – Laura', 'LG Velvet – Mia', 'iPhone 14 Pro – Maya'
   ];
+  
+  // Add entered name's device to the beginning if it exists
+  let phones = basePhones;
+  let userDevice = null;
+  if (enteredName) {
+    userDevice = `iPhone SE – ${enteredName}`;
+    // Only add if not already in the list
+    if (!basePhones.some(p => p.includes(` – ${enteredName}`))) {
+      phones = [userDevice, ...basePhones];
+    } else {
+      // Replace the generic one with the user's name
+      userDevice = basePhones.find(p => p.includes(` – ${enteredName}`));
+      phones = basePhones;
+    }
+  }
 
   pad.innerHTML = `
     <div style="padding:12px 12px 0 12px; display:flex; flex-direction:column; gap:12px; height:100%;">
@@ -2509,10 +2683,10 @@ function renderBluetooth(){
   const inner = listContainer ? listContainer.querySelector('.inner') : null;
   if(!inner) return;
 
-  inner.innerHTML = phones.map(p=>`
-    <div class="row-item" data-phone="${p}" style="display:flex; justify-content:space-between; align-items:center;">
+  inner.innerHTML = phones.map((p, idx)=>`
+    <div class="row-item" data-phone="${p}" style="display:flex; justify-content:space-between; align-items:center; ${idx === 0 && userDevice === p ? 'background:#08a0f7; background:rgba(8,160,247,0.15); padding:8px; border-radius:6px;' : ''}">
       <div>
-        <div style="font-weight:600">${p.split(' – ')[0]}</div>
+        <div style="font-weight:600">${p.split(' – ')[0]}${idx === 0 && userDevice === p ? ' <span style="color:#08a0f7; font-size:11px;">(dein Handy)</span>' : ''}</div>
         <div class="muted" style="font-size:12px; margin-top:4px;">${p.split(' – ')[1] || ''}</div>
       </div>
       <button class="seg ${p===active? 'on' : '' }" data-phone="${p}">${p===active? 'Verbunden' : 'Verbinden'}</button>
