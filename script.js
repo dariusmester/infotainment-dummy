@@ -220,20 +220,30 @@ function initWelcomeForm() {
       localStorage.setItem("emotion_before_v1", emotionBefore.value);
       localStorage.setItem("activation_before_v1", activationBefore.value);
       
-      // Session automatisch starten
-      loadTestDefaults(); // Lade Test-Einstellungen, die von Aufgaben abweichen
-      gestures.length=0; 
-      touchInputLog.length=0;
-      isSessionActive=true;
-      currentTaskIndex = 0;
-      taskStateStartTime = null;
-      // Farbe zurücksetzen
-      instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
-      updateTaskDisplay();
-      if(featuresArea) featuresArea.textContent=""; 
-      
-      // Modal verbergen und zur App gehen
+      // Modal verbergen
       modal.style.display = "none";
+      
+      // Hinweis anzeigen für 5 Sekunden
+      const taskStartHint = document.getElementById("taskStartHint");
+      if (taskStartHint) {
+        taskStartHint.style.display = "flex";
+        
+        setTimeout(() => {
+          taskStartHint.style.display = "none";
+          
+          // Session automatisch starten (nach Hinweis)
+          loadTestDefaults(); // Lade Test-Einstellungen, die von Aufgaben abweichen
+          gestures.length=0; 
+          touchInputLog.length=0;
+          isSessionActive=true;
+          currentTaskIndex = 0;
+          taskStateStartTime = null;
+          // Farbe zurücksetzen
+          instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
+          updateTaskDisplay();
+          if(featuresArea) featuresArea.textContent=""; 
+        }, 5000);
+      }
     });
   }
   
