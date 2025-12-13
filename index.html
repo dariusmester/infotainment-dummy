@@ -10,8 +10,7 @@
   <!-- Dünne Top-Bar -->
   <header id="topbar">
     <div id="topbar-left">
-      <strong>Hinweis:</strong>
-      <span id="instruction">Tippe eine Kachel an, um das Untermenü zu öffnen.</span>
+      <span id="instruction" style="font-size:16px; font-weight:600; color:#e8f3ff;">Tippe eine Kachel an, um das Untermenü zu öffnen.</span>
     </div>
     <div id="topbar-right">
       <button id="resetUser">Reset</button>
@@ -42,11 +41,17 @@
       <div id="welcomePage1" class="welcomePage" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; transition:opacity 0.3s, transform 0.3s;">
         <div style="max-width:600px; width:100%;">
           <h1 style="margin:0 0 16px 0; font-size:36px; color:#e8f3ff; text-align:center;">Willkommen!</h1>
-          <p style="color:#9fb0bf; line-height:1.8; margin:0 0 32px 0; font-size:16px; text-align:center;">
+          <p style="color:#9fb0bf; line-height:1.8; margin:0 0 24px 0; font-size:16px; text-align:center;">
             Dies ist ein Infotainment-Interface zum Testen von Benutzerinteraktionen.<br><br>
             Sie werden eine Serie von 9 Aufgaben absolvieren, die verschiedene Funktionen des Systems erfordern. 
             Alle Ihre Eingaben und Aktionen werden für die Analyse aufgezeichnet.
           </p>
+          <div style="background:#1a2535; border-left:4px solid #08a0f7; padding:16px; border-radius:8px; margin-bottom:32px;">
+            <p style="color:#e8f3ff; line-height:1.6; margin:0; font-size:15px;">
+              <strong style="color:#08a0f7;">💡 Wichtiger Hinweis:</strong><br>
+              Stellen Sie sich vor, Sie sitzen auf dem Fahrersitz Ihres neuen Autos und bedienen das Infotainment-System.
+            </p>
+          </div>
           <form id="welcomeForm" style="display:flex; flex-direction:column; gap:16px;">
             <div style="display:flex; flex-direction:column; gap:8px;">
               <label for="userNameInput" style="font-weight:600; color:#e8f3ff; font-size:16px;">Ihr Name:</label>

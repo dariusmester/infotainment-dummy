@@ -1,3 +1,24 @@
+/* ===== Hilfsfunktion: Entferne Nutzer-Name aus System ===== */
+function removeUserNameFromSystem(userName) {
+  if (!userName) return;
+  
+  // 1. Prüfe und entferne Bluetooth-Verbindung wenn der Name vorkommt
+  const BT_KEY = 'bluetooth_active_v1';
+  const activeBluetoothDevice = localStorage.getItem(BT_KEY);
+  if (activeBluetoothDevice && activeBluetoothDevice.includes(userName)) {
+    localStorage.removeItem(BT_KEY);
+    console.log(`Bluetooth-Gerät mit Namen "${userName}" entfernt`);
+  }
+  
+  // 2. Prüfe und entferne aktiven Nutzer wenn es der Name ist
+  const ACTIVE_USER_KEY = 'active_user_v1';
+  const activeUser = localStorage.getItem(ACTIVE_USER_KEY);
+  if (activeUser && activeUser.includes(userName)) {
+    localStorage.removeItem(ACTIVE_USER_KEY);
+    console.log(`Aktiver Nutzer "${userName}" entfernt`);
+  }
+}
+
 /* ===== Willkommens-Formular mit Multi-Page ===== */
 function initWelcomeForm() {
   const modal = document.getElementById("welcomeModal");
@@ -32,6 +53,9 @@ function initWelcomeForm() {
       // Name und Session-ID speichern
       localStorage.setItem("user_name_v1", userName);
       localStorage.setItem("session_id_v1", sessionId);
+      
+      // Entferne alle Bluetooth-Geräte und aktiven Nutzer mit diesem Namen
+      removeUserNameFromSystem(userName);
       
       // Zu Seite 2 wechseln
       if (page1 && page2) {
@@ -311,11 +335,10 @@ const TASKS = [
   },
   {
     id: 3,
-    text: "Stelle die Klima Synchronisierung aus, die Beifahrer Temperatur auf 25° und die Gebläsestärke auf 7",
+    text: "Stelle die Beifahrer Temperatur auf 25° und die Gebläsestärke auf 7",
     check: () => {
       const climateState = JSON.parse(localStorage.getItem('climate_state_v3') || '{}');
-      return climateState.temp?.sync === false && 
-             climateState.temp?.passenger === 25 && 
+      return climateState.temp?.passenger === 25 && 
              climateState.fan?.level === 7;
     }
   },
@@ -394,9 +417,9 @@ function loadTestDefaults() {
   };
   localStorage.setItem('music_player_v1', JSON.stringify(musicState));
   
-  // Task 3: Erwartet sync=false, passenger=25, fan=7 → Setze andere Werte
+  // Task 3: Erwartet passenger=25, fan=7 → Setze andere Werte
   const climateState = {
-    temp: { enabled: true, driver: 22.0, passenger: 22.0, rear: 21.0, sync: true },
+    temp: { enabled: true, driver: 22.0, passenger: 22.0, rear: 21.0, sync: false },
     fan: { enabled: true, level: 1, acOn: true, airflow: { face: true, feet: false, windshield: false, rear: false } }
   };
   localStorage.setItem('climate_state_v3', JSON.stringify(climateState));
@@ -2161,10 +2184,9 @@ function renderClimate(){
   pad.innerHTML = `
     <div class="assist-list" style="padding: 12px; display: flex; flex-direction: column; gap: 20px;">
 
-      <!-- AC und Sync Buttons oben -->
+      <!-- AC Button oben -->
       <div class="btn-group" style="justify-content: center; gap: 12px;">
         <button id="acBtn" class="lock-trunk-btn${st.fan.acOn ? " open" : ""}">${st.fan.acOn ? "A/C Ein" : "A/C Aus"}</button>
-        <button id="syncBtn" class="lock-trunk-btn${st.temp.sync ? " open" : ""}">${st.temp.sync ? "Sync Ein" : "Sync Aus"}</button>
       </div>
 
       <!-- Temperaturen -->
@@ -2183,9 +2205,9 @@ function renderClimate(){
         <div class="form-row">
           <label>Beifahrer</label>
           <div class="temp-box">
-            <button class="pill pill-dec" data-t="passenger" ${st.temp.sync?"disabled":""}>−</button>
+            <button class="pill pill-dec" data-t="passenger">−</button>
             <div class="temp-read" id="t_pass">${st.temp.passenger.toFixed(1)} °C</div>
-            <button class="pill pill-inc" data-t="passenger" ${st.temp.sync?"disabled":""}>＋</button>
+            <button class="pill pill-inc" data-t="passenger">＋</button>
           </div>
         </div>
 
@@ -2239,34 +2261,6 @@ function renderClimate(){
         acBtn.classList.remove("open");
       }
     });
-  }
-
-  // Sync Button Handler
-  const syncBtn = pad.querySelector("#syncBtn");
-  if(syncBtn) {
-    syncBtn.addEventListener("click", ()=>{
-      const S = loadClimate();
-      S.temp.sync = !S.temp.sync;
-      if(S.temp.sync) { S.temp.passenger = S.temp.driver; S.temp.rear = S.temp.driver; }
-      saveClimate(S);
-      syncBtn.textContent = S.temp.sync ? "Sync Ein" : "Sync Aus";
-      if(S.temp.sync) {
-        syncBtn.classList.add("open");
-      } else {
-        syncBtn.classList.remove("open");
-      }
-      // Passenger & Rear sperren/freigeben
-      pad.querySelectorAll('[data-t="passenger"], [data-t="rear"]').forEach(b=> b.disabled = S.temp.sync);
-      pad.querySelector("#t_pass").textContent = `${S.temp.passenger.toFixed(1)} °C`;
-      const rearEl = pad.querySelector("#t_rear"); if(rearEl) rearEl.textContent = `${S.temp.rear.toFixed(1)} °C`;
-    });
-  }
-
-  // initial apply if sync is active by default
-  if(st.temp && st.temp.sync){
-    pad.querySelectorAll('[data-t="passenger"], [data-t="rear"]').forEach(b=> b.disabled = true);
-    pad.querySelector("#t_pass").textContent = `${st.temp.passenger.toFixed(1)} °C`;
-    const rearElInit = pad.querySelector("#t_rear"); if(rearElInit) rearElInit.textContent = `${st.temp.rear.toFixed(1)} °C`;
   }
 
   // Temperaturen (Driver/Passenger/Rear) +/- in 0.5 Schritten (16..28)
