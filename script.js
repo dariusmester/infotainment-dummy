@@ -302,7 +302,7 @@ const TASKS = [
     text: "Stelle den Abstandsregeltempomat auf die höchste Abstandsstufe und aktiviere den Spurhalteassistenten",
     check: () => {
       const assistState = JSON.parse(localStorage.getItem('assistants_state_v1') || '{}');
-      return assistState.acc?.distance === 3 && assistState.lka?.enabled === true;
+      return assistState.acc?.distance === 10 && assistState.lka?.enabled === true;
     }
   }
 ];
@@ -420,14 +420,19 @@ function checkTaskCompletion() {
         // Farbe zurücksetzen
         instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
         currentTaskIndex++;
-        updateTaskDisplay();
         
         if (currentTaskIndex >= TASKS.length) {
-          // Kurzer Delay, damit Text sichtbar wird, dann Auto-Export starten
+          // Alle Aufgaben abgeschlossen - zeige "Vielen Dank"-Seite
+          updateTaskDisplay();
+          // Warte kurz, dann zeige Thank You Modal
           setTimeout(() => {
-            instruction.textContent = "Alle Aufgaben abgeschlossen";
-            try { exportAllData(); } catch(e) { console.error(e); }
-          }, 300);
+            const thankYouModal = document.getElementById("thankYouModal");
+            if (thankYouModal) {
+              thankYouModal.style.display = "flex";
+            }
+          }, 500);
+        } else {
+          updateTaskDisplay();
         }
       } else {
         // Noch in der 1s-Phase: grün halten
@@ -477,6 +482,15 @@ document.getElementById("toggleSession").onclick = ()=>{
 };
 
 document.getElementById("exportData").onclick = exportAllData;
+
+// "Fertig"-Button im Thank You Modal
+document.getElementById("finishBtn").onclick = () => {
+  try {
+    exportAllData();
+  } catch(e) {
+    console.error("Export error:", e);
+  }
+};
 
 document.getElementById("resetUser").onclick = () => {
   if (confirm("Möchten Sie wirklich alle Daten löschen und von vorne beginnen?")) {
@@ -867,8 +881,15 @@ function onUpCancel(e){
   // Aktuelle Funktion ermitteln (welche App/View ist aktiv)
   const currentFunction = getCurrentFunction();
   
+  // Aktuelle Aufgabe ermitteln
+  const currentTask = isSessionActive && currentTaskIndex < TASKS.length 
+    ? TASKS[currentTaskIndex].id 
+    : null;
+  
   gestures.push({
     task: currentTaskKey || "home",
+    currentTaskNumber: currentTask,
+    screen: currentFunction,
     stepIndex: guidedStepIndex,
     downTime:s.downTime, upTime:s.upTime,
     downISO:new Date(s.downTime).toISOString(), upISO:new Date(s.upTime).toISOString(),
@@ -883,6 +904,8 @@ function onUpCancel(e){
   // Detailliertes Log für JSON-Export
   touchInputLog.push({
     type: isTap ? "tap" : "swipe",
+    current_task: currentTask,
+    screen: currentFunction,
     function: currentFunction,
     down: {
       time: new Date(s.downTime).toISOString(),
@@ -1084,8 +1107,8 @@ function appendFeatures(header,row){ if(!featuresArea.textContent.trim()){ featu
 function exportGesturesCSV(demographics = {}){
   if(!gestures.length){ alert("Keine Gesten-Daten."); return; }
   
-  // Header mit demographischen Daten erweitern
-  const header=["age","gender","occupation","task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx","directDistancePx","minSpeedPxMs","maxSpeedPxMs"];
+  // Header mit demographischen Daten und neuen Feldern erweitern
+  const header=["age","gender","occupation","currentTaskNumber","screen","task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx","directDistancePx","minSpeedPxMs","maxSpeedPxMs"];
   
   // Rows mit demographischen Daten für jede Zeile
   const rows=gestures.map(g=>{
@@ -1093,6 +1116,8 @@ function exportGesturesCSV(demographics = {}){
       age: demographics.age || "",
       gender: demographics.gender || "",
       occupation: demographics.occupation || "",
+      currentTaskNumber: g.currentTaskNumber || "",
+      screen: g.screen || "",
       ...g
     };
     return header.map(h=>formatCSV(rowData[h])).join(",");

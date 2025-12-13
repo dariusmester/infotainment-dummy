@@ -199,6 +199,23 @@
     </div>
   </div>
 
+  <!-- Thank You Modal - Fullscreen -->
+  <div id="thankYouModal" style="display:none; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column;">
+    <div style="max-width:600px; width:100%; padding:40px; text-align:center;">
+      <h1 style="margin:0 0 24px 0; font-size:48px; color:#08a0f7;">Vielen Dank!</h1>
+      <p style="color:#e8f3ff; line-height:1.8; margin:0 0 32px 0; font-size:18px;">
+        Sie haben alle Aufgaben erfolgreich abgeschlossen.<br><br>
+        Ihre Daten wurden erfasst und sind bereit zum Export.
+      </p>
+      <button 
+        id="finishBtn"
+        style="padding:20px 48px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:18px;"
+      >
+        Fertig
+      </button>
+    </div>
+  </div>
+
   <!-- Calibration dialog -->
   <dialog id="calDialog">
     <form method="dialog" class="cal-form">
