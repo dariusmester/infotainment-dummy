@@ -27,8 +27,13 @@ function initWelcomeForm() {
         return;
       }
       
-      // Name speichern
+      // Session-ID generieren basierend auf aktuellem Datum und Uhrzeit
+      const now = new Date();
+      const sessionId = now.toISOString().replace(/[-:]/g, '').replace('T', '_').split('.')[0];
+      
+      // Name und Session-ID speichern
       localStorage.setItem("user_name_v1", userName);
+      localStorage.setItem("session_id_v1", sessionId);
       
       // Zu Seite 2 wechseln
       if (page1 && page2) {
@@ -496,6 +501,10 @@ document.getElementById("resetUser").onclick = () => {
   if (confirm("Möchten Sie wirklich alle Daten löschen und von vorne beginnen?")) {
     // Alle Daten löschen
     localStorage.removeItem("user_name_v1");
+    localStorage.removeItem("user_age_v1");
+    localStorage.removeItem("user_gender_v1");
+    localStorage.removeItem("user_occupation_v1");
+    localStorage.removeItem("session_id_v1");
     localStorage.removeItem("active_user_v1");
     localStorage.removeItem("music_player_v1");
     localStorage.removeItem("climate_state_v3");
@@ -532,40 +541,25 @@ function exportAllData(){
     return;
   }
   
-  // Demographische Daten abrufen (ohne Name)
+  // Session-ID und Demographische Daten abrufen (ohne Name)
+  const sessionId = localStorage.getItem("session_id_v1") || "unknown";
   const demographics = {
-    age: localStorage.getItem("user_age_v1") || null,
-    gender: localStorage.getItem("user_gender_v1") || null,
-    occupation: localStorage.getItem("user_occupation_v1") || null
+    session_id: sessionId,
+    age: localStorage.getItem("user_age_v1") || "",
+    gender: localStorage.getItem("user_gender_v1") || "",
+    occupation: localStorage.getItem("user_occupation_v1") || ""
   };
   
-  // Export JSON
-  if(touchInputLog.length > 0){
-    const jsonData = {
-      demographics: demographics,
-      session: {
-        start: touchInputLog[0]?.down.time || new Date().toISOString(),
-        end: touchInputLog[touchInputLog.length - 1]?.up.time || new Date().toISOString(),
-        total_inputs: touchInputLog.length
-      },
-      inputs: touchInputLog
-    };
-    
-    const json = JSON.stringify(jsonData, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `touch_inputs_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+  // Export 1: Nutzerdaten CSV
+  exportUserDataCSV(demographics);
   
-  // Export CSV
+  // Export 2: Touch-Daten CSV
   if(gestures.length > 0){
     setTimeout(() => {
-      exportGesturesCSV(demographics);
+      exportTouchDataCSV(sessionId);
     }, 100);
+  } else {
+    alert("Keine Touch-Daten erfasst.");
   }
 }
 
@@ -1104,26 +1098,47 @@ function sum(a){ return a.reduce((s,x)=>s+x,0); }
 function round2(x){ return Math.round(x*100)/100; }
 function round3(x){ return Math.round(x*1000)/1000; }
 function appendFeatures(header,row){ if(!featuresArea.textContent.trim()){ featuresArea.textContent = header+"\n"+row; } else { featuresArea.textContent += "\n"+row; } }
-function exportGesturesCSV(demographics = {}){
-  if(!gestures.length){ alert("Keine Gesten-Daten."); return; }
+function exportUserDataCSV(demographics){
+  // CSV mit einer Zeile für die Nutzerdaten
+  const header = ["session_id", "age", "gender", "occupation"];
+  const row = [
+    formatCSV(demographics.session_id),
+    formatCSV(demographics.age),
+    formatCSV(demographics.gender),
+    formatCSV(demographics.occupation)
+  ].join(",");
   
-  // Header mit demographischen Daten und neuen Feldern erweitern
-  const header=["age","gender","occupation","currentTaskNumber","screen","task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx","directDistancePx","minSpeedPxMs","maxSpeedPxMs"];
+  downloadCSV(`user_data_${demographics.session_id}.csv`, header.join(",") + "\n" + row);
+}
+
+function exportTouchDataCSV(sessionId){
+  if(!gestures.length){ alert("Keine Touch-Daten."); return; }
   
-  // Rows mit demographischen Daten für jede Zeile
+  // Header mit session_id als erstes Feld
+  const header=["session_id","currentTaskNumber","screen","task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx","directDistancePx","minSpeedPxMs","maxSpeedPxMs"];
+  
+  // Rows mit session_id für jede Zeile
   const rows=gestures.map(g=>{
     const rowData = {
-      age: demographics.age || "",
-      gender: demographics.gender || "",
-      occupation: demographics.occupation || "",
+      session_id: sessionId,
       currentTaskNumber: g.currentTaskNumber || "",
       screen: g.screen || "",
-      ...g
+      task: g.task || "",
+      stepIndex: g.stepIndex ?? "",
+      downISO: g.downISO || "",
+      upISO: g.upISO || "",
+      durationMs: g.durationMs ?? "",
+      lengthPx: g.lengthPx ?? "",
+      type: g.type || "",
+      pathDeviationPx: g.pathDeviationPx ?? "",
+      directDistancePx: g.directDistancePx ?? "",
+      minSpeedPxMs: g.minSpeedPxMs ?? "",
+      maxSpeedPxMs: g.maxSpeedPxMs ?? ""
     };
     return header.map(h=>formatCSV(rowData[h])).join(",");
   });
   
-  downloadCSV("touch_gestures.csv", header.join(",")+"\n"+rows.join("\n"));
+  downloadCSV(`touch_data_${sessionId}.csv`, header.join(",")+"\n"+rows.join("\n"));
 }
 function formatCSV(v){ if(typeof v==="string"&&(v.includes(",")||v.includes('"'))) return `"${v.replace(/"/g,'""')}"`; return v ?? ""; }
 function downloadCSV(name,text){ const blob=new Blob([text],{type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
