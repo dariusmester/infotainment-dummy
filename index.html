@@ -71,28 +71,67 @@
         </div>
       </div>
 
-      <!-- Seite 2: Informationen -->
+      <!-- Seite 2: Demographische Daten -->
       <div id="welcomePage2" class="welcomePage" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; overflow-y:auto;">
         <div style="max-width:600px; width:100%;">
-          <h1 style="margin:0 0 24px 0; font-size:36px; color:#e8f3ff; text-align:center;">Wie funktioniert es?</h1>
-          <div style="color:#9fb0bf; line-height:1.8; font-size:15px; display:flex; flex-direction:column; gap:20px;">
-            <div>
-              <h3 style="color:#08a0f7; margin:0 0 8px 0;">📋 Die 9 Aufgaben</h3>
-              <p style="margin:0;">Jede Aufgabe erfordert, dass Sie bestimmte Einstellungen oder Aktionen durchführen. Die aktuelle Aufgabe wird oben auf dem Bildschirm angezeigt.</p>
+          <h1 style="margin:0 0 16px 0; font-size:36px; color:#e8f3ff; text-align:center;">Ihre Angaben</h1>
+          <p style="color:#9fb0bf; line-height:1.8; margin:0 0 32px 0; font-size:16px; text-align:center;">
+            Bitte geben Sie einige demographische Informationen an. Diese Daten werden anonym für Forschungszwecke verwendet.
+          </p>
+          <form id="demographicForm" style="display:flex; flex-direction:column; gap:20px;">
+            <!-- Alter -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label for="userAgeInput" style="font-weight:600; color:#e8f3ff; font-size:16px;">Alter:</label>
+              <input 
+                id="userAgeInput" 
+                type="number" 
+                min="18" 
+                max="99" 
+                placeholder="z.B. 25" 
+                style="padding:16px; border:1px solid #505353; border-radius:8px; background:#232525; color:#e8f3ff; font-size:16px;"
+                required
+              >
             </div>
-            <div>
-              <h3 style="color:#08a0f7; margin:0 0 8px 0;">⏱️ Bestätigung erforderlich</h3>
-              <p style="margin:0;">Wenn Sie eine Aufgabe korrekt erfüllen, wird der Text grün. Die Aufgabe muss 1 Sekunde lang grün bleiben, um als erfüllt zu gelten.</p>
+            
+            <!-- Geschlecht -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-weight:600; color:#e8f3ff; font-size:16px;">Geschlecht:</label>
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <label style="display:flex; align-items:center; gap:8px; color:#e8f3ff; cursor:pointer; padding:12px 20px; border:1px solid #505353; border-radius:8px; background:#232525;">
+                  <input type="radio" name="gender" value="männlich" required style="width:18px; height:18px; cursor:pointer;">
+                  <span>Männlich</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; color:#e8f3ff; cursor:pointer; padding:12px 20px; border:1px solid #505353; border-radius:8px; background:#232525;">
+                  <input type="radio" name="gender" value="weiblich" required style="width:18px; height:18px; cursor:pointer;">
+                  <span>Weiblich</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; color:#e8f3ff; cursor:pointer; padding:12px 20px; border:1px solid #505353; border-radius:8px; background:#232525;">
+                  <input type="radio" name="gender" value="divers" required style="width:18px; height:18px; cursor:pointer;">
+                  <span>Divers</span>
+                </label>
+              </div>
             </div>
-            <div>
-              <h3 style="color:#08a0f7; margin:0 0 8px 0;">📊 Aufzeichnung</h3>
-              <p style="margin:0;">Alle Ihre Touch-Eingaben werden automatisch aufgezeichnet. Am Ende können Sie die Daten exportieren.</p>
+            
+            <!-- Beruflicher Status -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label for="userOccupationInput" style="font-weight:600; color:#e8f3ff; font-size:16px;">Beruflicher Status:</label>
+              <select 
+                id="userOccupationInput" 
+                style="padding:16px; border:1px solid #505353; border-radius:8px; background:#232525; color:#e8f3ff; font-size:16px; cursor:pointer;"
+                required
+              >
+                <option value="" disabled selected>Bitte wählen...</option>
+                <option value="Schüler/in">Schüler/in</option>
+                <option value="Student/in">Student/in</option>
+                <option value="Angestellt">Angestellt</option>
+                <option value="Selbstständig">Selbstständig</option>
+                <option value="Beamter/Beamtin">Beamter/Beamtin</option>
+                <option value="Arbeitslos">Arbeitslos</option>
+                <option value="Rentner/in">Rentner/in</option>
+                <option value="Sonstiges">Sonstiges</option>
+              </select>
             </div>
-            <div>
-              <h3 style="color:#08a0f7; margin:0 0 8px 0;">⏱️ Dauer</h3>
-              <p style="margin:0;">Die Session dauert etwa 10-15 Minuten.</p>
-            </div>
-          </div>
+          </form>
           <div style="display:flex; gap:12px; margin-top:32px;">
             <button 
               type="button" 
@@ -112,18 +151,30 @@
         </div>
       </div>
 
-      <!-- Seite 3: Datenschutz -->
+      <!-- Seite 3: Informationen & Datenschutz -->
       <div id="welcomePage3" class="welcomePage" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; overflow-y:auto;">
         <div style="max-width:600px; width:100%;">
-          <h1 style="margin:0 0 24px 0; font-size:36px; color:#e8f3ff; text-align:center;">Datenschutz</h1>
+          <h1 style="margin:0 0 24px 0; font-size:36px; color:#e8f3ff; text-align:center;">Wie funktioniert es?</h1>
           <div style="color:#9fb0bf; line-height:1.8; font-size:15px; display:flex; flex-direction:column; gap:20px;">
             <div>
-              <h3 style="color:#08a0f7; margin:0 0 8px 0;">🔒 Anonyme Datenerfassung</h3>
-              <p style="margin:0;">Alle Ihre Daten werden <strong style="color:#e8f3ff;">vollständig anonym</strong> gespeichert. Ihr Name wird nicht mit den erfassten Interaktionsdaten verbunden.</p>
+              <h3 style="color:#08a0f7; margin:0 0 8px 0;">📋 Die 9 Aufgaben</h3>
+              <p style="margin:0;">Jede Aufgabe erfordert, dass Sie bestimmte Einstellungen oder Aktionen durchführen. Die aktuelle Aufgabe wird oben auf dem Bildschirm angezeigt.</p>
             </div>
             <div>
-              <h3 style="color:#08a0f7; margin:0 0 8px 0;"> Verwendung</h3>
-              <p style="margin:0;">Die erfassten Daten dienen ausschließlich der Forschung und Verbesserung von Benutzeroberflächen.</p>
+              <h3 style="color:#08a0f7; margin:0 0 8px 0;">⏱️ Bestätigung erforderlich</h3>
+              <p style="margin:0;">Wenn Sie eine Aufgabe korrekt erfüllen, wird der Text grün. Die Aufgabe muss 1 Sekunde lang grün bleiben, um als erfüllt zu gelten.</p>
+            </div>
+            <div>
+              <h3 style="color:#08a0f7; margin:0 0 8px 0;">📊 Aufzeichnung</h3>
+              <p style="margin:0;">Alle Ihre Touch-Eingaben werden automatisch aufgezeichnet. Am Ende können Sie die Daten exportieren.</p>
+            </div>
+            <div>
+              <h3 style="color:#08a0f7; margin:0 0 8px 0;">⏱️ Dauer</h3>
+              <p style="margin:0;">Die Session dauert etwa 10-15 Minuten.</p>
+            </div>
+            <div style="border-top:1px solid #505353; padding-top:20px; margin-top:8px;">
+              <h3 style="color:#08a0f7; margin:0 0 8px 0;">🔒 Datenschutz</h3>
+              <p style="margin:0;">Alle Ihre Daten werden <strong style="color:#e8f3ff;">vollständig anonym</strong> gespeichert. Ihr Name wird nicht mit den erfassten Interaktionsdaten verbunden. Die erfassten Daten dienen ausschließlich der Forschung und Verbesserung von Benutzeroberflächen.</p>
             </div>
           </div>
           <div style="display:flex; gap:12px; margin-top:32px;">

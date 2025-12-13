@@ -2,6 +2,8 @@
 function initWelcomeForm() {
   const modal = document.getElementById("welcomeModal");
   const nameInput = document.getElementById("userNameInput");
+  const ageInput = document.getElementById("userAgeInput");
+  const occupationInput = document.getElementById("userOccupationInput");
   const page1 = document.getElementById("welcomePage1");
   const page2 = document.getElementById("welcomePage2");
   const page3 = document.getElementById("welcomePage3");
@@ -49,6 +51,22 @@ function initWelcomeForm() {
   // Navigation Seite 2 → Seite 3
   if (nextBtn2) {
     nextBtn2.addEventListener("click", () => {
+      const age = ageInput?.value?.trim();
+      const genderRadio = document.querySelector('input[name="gender"]:checked');
+      const gender = genderRadio?.value;
+      const occupation = occupationInput?.value;
+      
+      if (!age || !gender || !occupation) {
+        alert("Bitte füllen Sie alle Felder aus.");
+        return;
+      }
+      
+      // Demographische Daten speichern
+      localStorage.setItem("user_age_v1", age);
+      localStorage.setItem("user_gender_v1", gender);
+      localStorage.setItem("user_occupation_v1", occupation);
+      
+      // Zu Seite 3 wechseln
       if (page2 && page3) {
         page2.style.display = "none";
         page3.style.display = "flex";
@@ -66,7 +84,7 @@ function initWelcomeForm() {
     });
   }
   
-  // Seite 3 abschließen
+  // Seite 3 abschließen (Starten-Button)
   if (nextBtn3) {
     nextBtn3.addEventListener("click", () => {
       // Modal verbergen und zur App gehen
@@ -244,11 +262,13 @@ const TASKS = [
   },
   {
     id: 5,
-    text: "Verbinde das iPhone SE von Julia mit Bluetooth und rufe Hannah Klein an",
+    text: "Verbinde dein Handy mit Bluetooth und rufe Hannah Klein an",
     check: () => {
+      const enteredName = localStorage.getItem('user_name_v1');
       const btActive = localStorage.getItem('bluetooth_active_v1');
       const phoneState = localStorage.getItem('phone_call_active');
-      return btActive === 'iPhone SE – Julia' && phoneState === 'Hannah Klein';
+      const expectedDevice = enteredName ? `Handy – ${enteredName}` : 'iPhone SE – Julia';
+      return btActive === expectedDevice && phoneState === 'Hannah Klein';
     }
   },
   {
@@ -498,9 +518,17 @@ function exportAllData(){
     return;
   }
   
+  // Demographische Daten abrufen (ohne Name)
+  const demographics = {
+    age: localStorage.getItem("user_age_v1") || null,
+    gender: localStorage.getItem("user_gender_v1") || null,
+    occupation: localStorage.getItem("user_occupation_v1") || null
+  };
+  
   // Export JSON
   if(touchInputLog.length > 0){
     const jsonData = {
+      demographics: demographics,
       session: {
         start: touchInputLog[0]?.down.time || new Date().toISOString(),
         end: touchInputLog[touchInputLog.length - 1]?.up.time || new Date().toISOString(),
@@ -522,7 +550,7 @@ function exportAllData(){
   // Export CSV
   if(gestures.length > 0){
     setTimeout(() => {
-      exportGesturesCSV();
+      exportGesturesCSV(demographics);
     }, 100);
   }
 }
@@ -1053,10 +1081,23 @@ function sum(a){ return a.reduce((s,x)=>s+x,0); }
 function round2(x){ return Math.round(x*100)/100; }
 function round3(x){ return Math.round(x*1000)/1000; }
 function appendFeatures(header,row){ if(!featuresArea.textContent.trim()){ featuresArea.textContent = header+"\n"+row; } else { featuresArea.textContent += "\n"+row; } }
-function exportGesturesCSV(){
+function exportGesturesCSV(demographics = {}){
   if(!gestures.length){ alert("Keine Gesten-Daten."); return; }
-  const header=["task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx","directDistancePx","minSpeedPxMs","maxSpeedPxMs"];
-  const rows=gestures.map(g=>header.map(h=>formatCSV(g[h])).join(","));
+  
+  // Header mit demographischen Daten erweitern
+  const header=["age","gender","occupation","task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx","directDistancePx","minSpeedPxMs","maxSpeedPxMs"];
+  
+  // Rows mit demographischen Daten für jede Zeile
+  const rows=gestures.map(g=>{
+    const rowData = {
+      age: demographics.age || "",
+      gender: demographics.gender || "",
+      occupation: demographics.occupation || "",
+      ...g
+    };
+    return header.map(h=>formatCSV(rowData[h])).join(",");
+  });
+  
   downloadCSV("touch_gestures.csv", header.join(",")+"\n"+rows.join("\n"));
 }
 function formatCSV(v){ if(typeof v==="string"&&(v.includes(",")||v.includes('"'))) return `"${v.replace(/"/g,'""')}"`; return v ?? ""; }
@@ -2607,19 +2648,19 @@ function renderUser(){
     'Uwe König','Vera Brandt','Willi Kern','Xenia Jansen','Yannick Otto','Zoe Richter','Anna Schwarz','Björn Koch','Celine Matheis','Darius Mester'
   ];
   
-  // Add entered name to the beginning of the list if it exists and is not already in the list
-  let users = baseUsers;
+  // Insert entered name in the middle of the list if it exists and is not already in the list
+  let users = [...baseUsers];
   if (enteredName && !baseUsers.includes(enteredName)) {
-    users = [enteredName, ...baseUsers];
+    users.splice(15, 0, enteredName);
   }
 
   pad.innerHTML = `
     <div style="padding:12px; height:100%; display:flex; flex-direction:column; gap:12px;">
       <div style="font-weight:700; font-size:18px;">Nutzer</div>
       <div style="flex:1; overflow:auto; border-top:1px solid var(--secondarycolor); padding-top:8px;">
-        ${users.map((u, idx)=>`
-          <div class="row-item" data-user="${u}" style="display:flex; justify-content:space-between; align-items:center; ${idx === 0 && enteredName === u ? 'background:#08a0f7; background:rgba(8,160,247,0.15); padding:8px; border-radius:6px;' : ''}">
-            <div>${u}${idx === 0 && enteredName === u ? ' <span style="color:#08a0f7; font-size:11px;">(dein Profil)</span>' : ''}</div>
+        ${users.map((u)=>`
+          <div class="row-item" data-user="${u}" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>${u}</div>
             <button class="seg ${u===active? 'on' : '' }" data-user="${u}">${u===active? 'Aktiv' : 'Wählen'}</button>
           </div>
         `).join('')}
@@ -2653,19 +2694,12 @@ function renderBluetooth(){
     'iPhone SE – Julia', 'Moto G – Karl', 'Fairphone 4 – Laura', 'LG Velvet – Mia', 'iPhone 14 Pro – Maya'
   ];
   
-  // Add entered name's device to the beginning if it exists
-  let phones = basePhones;
-  let userDevice = null;
-  if (enteredName) {
-    userDevice = `iPhone SE – ${enteredName}`;
-    // Only add if not already in the list
-    if (!basePhones.some(p => p.includes(` – ${enteredName}`))) {
-      phones = [userDevice, ...basePhones];
-    } else {
-      // Replace the generic one with the user's name
-      userDevice = basePhones.find(p => p.includes(` – ${enteredName}`));
-      phones = basePhones;
-    }
+  // Add entered name's device in the middle if it exists
+  let phones = [...basePhones];
+  if (enteredName && !basePhones.some(p => p.includes(` – ${enteredName}`))) {
+    const userDevice = `Handy – ${enteredName}`;
+    // Insert in the middle (around index 7-8)
+    phones.splice(7, 0, userDevice);
   }
 
   pad.innerHTML = `
@@ -2683,10 +2717,10 @@ function renderBluetooth(){
   const inner = listContainer ? listContainer.querySelector('.inner') : null;
   if(!inner) return;
 
-  inner.innerHTML = phones.map((p, idx)=>`
-    <div class="row-item" data-phone="${p}" style="display:flex; justify-content:space-between; align-items:center; ${idx === 0 && userDevice === p ? 'background:#08a0f7; background:rgba(8,160,247,0.15); padding:8px; border-radius:6px;' : ''}">
+  inner.innerHTML = phones.map((p)=>`
+    <div class="row-item" data-phone="${p}" style="display:flex; justify-content:space-between; align-items:center;">
       <div>
-        <div style="font-weight:600">${p.split(' – ')[0]}${idx === 0 && userDevice === p ? ' <span style="color:#08a0f7; font-size:11px;">(dein Handy)</span>' : ''}</div>
+        <div style="font-weight:600">${p.split(' – ')[0]}</div>
         <div class="muted" style="font-size:12px; margin-top:4px;">${p.split(' – ')[1] || ''}</div>
       </div>
       <button class="seg ${p===active? 'on' : '' }" data-phone="${p}">${p===active? 'Verbunden' : 'Verbinden'}</button>
