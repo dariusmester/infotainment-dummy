@@ -9,8 +9,16 @@ body { background:#000000; color:#e8f3ff; font-family:system-ui,-apple-system,Se
 #topbar { height:54px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 12px; background:#0f1a2a; border-bottom:1px solid #14344a; }
 #topbar-left { display:flex; gap:8px; align-items:center; font-size:14px; }
 #topbar-right { display:flex; gap:8px; align-items:center; }
-#topbar button { background:#08a0f7; color:#00131c; border:none; border-radius:10px; padding:6px 10px; font-weight:700; cursor:pointer; }
+#topbar button { background:#08a0f7; color:#00131c; border:none; border-radius:10px; padding:6px 10px; font-weight:700; cursor:pointer; transition:all 0.3s; }
 #topbar button:hover { filter:brightness(1.05); }
+#skipTaskBtn { background:#f59e0b !important; color:#00131c; animation:fadeIn 0.3s ease-in; }
+#skipTaskBtn:hover { background:#f97316 !important; }
+
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(-5px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
 .nav-search{
   background: var(--primarycolor); /* match other grey controls */
   color: #e8f3ff;

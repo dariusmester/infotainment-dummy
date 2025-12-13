@@ -19,12 +19,65 @@ function removeUserNameFromSystem(userName) {
   }
 }
 
+/* ===== Hintergrundmusik ===== */
+const backgroundMusic = document.getElementById("backgroundMusic");
+
+// Bedingungskonfiguration
+const CONDITIONS = {
+  A: {
+    images: [
+      'images/Beach 1.jpg',
+      'images/Dog 6.jpg',
+      'images/Fireworks 2.jpg',
+      'images/Lake 9.jpg',
+      'images/Rainbow 2.jpg'
+    ],
+    song: 'Songs/2019.mp3'
+  },
+  B: {
+    images: [
+      'images/Bed 1.jpg',
+      'images/Keys 1.jpg',
+      'images/Roofing 1.jpg',
+      'images/Storage 2.jpg',
+      'images/Office supplies 1.jpg'
+    ],
+    song: 'Songs/2049.mp3'
+  },
+  C: {
+    images: [
+      'images/Destruction 4.jpg',
+      'images/Dirt 1.jpg',
+      'images/Fire 9.jpg',
+      'images/Garbage dump 2.jpg',
+      'images/Garbage dump 4.jpg'
+    ],
+    song: 'Songs/2012.mp3'
+  }
+};
+
+let selectedCondition = 'A'; // Standard-Bedingung
+
+function startBackgroundMusic() {
+  if (backgroundMusic) {
+    // Song basierend auf gewählter Bedingung laden
+    const songPath = CONDITIONS[selectedCondition].song;
+    backgroundMusic.src = songPath;
+    backgroundMusic.volume = 0.3; // Leise Hintergrundmusik (30%)
+    backgroundMusic.play().catch(err => {
+      console.log("Autoplay blockiert - Musik wird beim ersten User-Interaction gestartet");
+    });
+  }
+}
+
 /* ===== Willkommens-Formular mit Multi-Page ===== */
 function initWelcomeForm() {
   const modal = document.getElementById("welcomeModal");
   const nameInput = document.getElementById("userNameInput");
+  const conditionSelect = document.getElementById("conditionSelect");
   const page1 = document.getElementById("welcomePage1");
   const page2 = document.getElementById("welcomePage2");
+  const pageImages = document.getElementById("welcomePageImages");
   const page3 = document.getElementById("welcomePage3");
   const nextBtn1 = document.getElementById("nextPageBtn1");
   const prevBtn2 = document.getElementById("prevPageBtn2");
@@ -37,6 +90,14 @@ function initWelcomeForm() {
     return;
   }
   
+  // Event-Listener für Bedingungsauswahl
+  if (conditionSelect) {
+    conditionSelect.addEventListener("change", (e) => {
+      selectedCondition = e.target.value;
+      console.log("Bedingung gewählt:", selectedCondition);
+    });
+  }
+  
   // Navigation Seite 1 → Seite 2
   if (nextBtn1) {
     nextBtn1.addEventListener("click", () => {
@@ -45,6 +106,9 @@ function initWelcomeForm() {
         alert("Bitte geben Sie Ihren Namen ein.");
         return;
       }
+      
+      // Ausgewählte Bedingung speichern
+      localStorage.setItem("selected_condition_v1", selectedCondition);
       
       // Session-ID generieren basierend auf aktuellem Datum und Uhrzeit
       const now = new Date();
@@ -56,6 +120,9 @@ function initWelcomeForm() {
       
       // Entferne alle Bluetooth-Geräte und aktiven Nutzer mit diesem Namen
       removeUserNameFromSystem(userName);
+      
+      // Starte Hintergrundmusik
+      startBackgroundMusic();
       
       // Zu Seite 2 wechseln
       if (page1 && page2) {
@@ -75,15 +142,57 @@ function initWelcomeForm() {
     });
   }
   
-  // Navigation Seite 2 → Seite 3
+  // Navigation Seite 2 → Bildergalerie
   if (nextBtn2) {
     nextBtn2.addEventListener("click", () => {
-      // Zu Seite 3 wechseln (Emotionen vorher)
-      if (page2 && page3) {
+      // Starte Bildergalerie-Diashow
+      if (page2 && pageImages) {
         page2.style.display = "none";
-        page3.style.display = "flex";
+        pageImages.style.display = "flex";
+        startImageSlideshow();
       }
     });
+  }
+  
+  // Bildergalerie-Funktion
+  function startImageSlideshow() {
+    // Bilder basierend auf gewählter Bedingung laden
+    const images = CONDITIONS[selectedCondition].images;
+    
+    const imgElement = document.getElementById("slideshowImage");
+    let currentIndex = 0;
+    
+    function showNextImage() {
+      if (currentIndex < images.length) {
+        imgElement.src = images[currentIndex];
+        imgElement.style.opacity = '0';
+        
+        // Fade-in Animation
+        setTimeout(() => {
+          imgElement.style.transition = 'opacity 0.5s ease-in-out';
+          imgElement.style.opacity = '1';
+        }, 50);
+        
+        currentIndex++;
+        
+        if (currentIndex < images.length) {
+          // Nächstes Bild nach 10 Sekunden
+          setTimeout(showNextImage, 10000);
+        } else {
+          // Alle Bilder gezeigt - gehe zu Seite 3
+          setTimeout(() => {
+            const pageImages = document.getElementById("welcomePageImages");
+            const page3 = document.getElementById("welcomePage3");
+            if (pageImages && page3) {
+              pageImages.style.display = "none";
+              page3.style.display = "flex";
+            }
+          }, 10000); // Letztes Bild auch 10 Sekunden anzeigen
+        }
+      }
+    }
+    
+    showNextImage();
   }
   
   // Navigation Seite 3 → Seite 2
@@ -298,11 +407,14 @@ let currentTaskKey = null;
 let guidedStepIndex = 0;
 let currentTaskIndex = 0;
 let taskStateStartTime = null; // Timestamp, wann der korrekte Zustand begonnen hat
+let taskStartTime = null; // Timestamp, wann die aktuelle Aufgabe begonnen hat
+let skipButtonTimeout = null; // Timer für den Skip-Button
 
 const TAP_THRESHOLD_PX = 26; // ~5mm bei typischen Displays
 
 const appContent = document.getElementById("appContent");
 const instruction = document.getElementById("instruction");
+const skipTaskBtn = document.getElementById("skipTaskBtn");
 const featuresArea = document.getElementById("featuresArea");
 // Farben für Aufgaben-Feedback
 const INSTRUCTION_DEFAULT_COLOR = getComputedStyle(instruction).color;
@@ -475,16 +587,48 @@ function updateTaskDisplay() {
 
   if (!isSessionActive) {
     instruction.textContent = "Tippe eine Kachel an, um das Untermenü zu öffnen.";
+    hideSkipButton();
     return;
   }
 
   if (currentTaskIndex >= TASKS.length) {
     instruction.textContent = "Alle Aufgaben abgeschlossen";
+    hideSkipButton();
     return;
   }
   
   const task = TASKS[currentTaskIndex];
   instruction.textContent = `Aufgabe ${task.id}/9: ${task.text}`;
+  
+  // Starte Timer für Skip-Button (15 Sekunden)
+  startSkipButtonTimer();
+}
+
+function startSkipButtonTimer() {
+  // Bestehenden Timer löschen
+  if (skipButtonTimeout) {
+    clearTimeout(skipButtonTimeout);
+  }
+  
+  // Skip-Button verstecken
+  if (skipTaskBtn) skipTaskBtn.style.display = "none";
+  
+  // Neuen Timer starten - zeige Button nach 15 Sekunden
+  skipButtonTimeout = setTimeout(() => {
+    if (skipTaskBtn && isSessionActive && currentTaskIndex < TASKS.length) {
+      skipTaskBtn.style.display = "inline-block";
+    }
+  }, 15000); // 15 Sekunden
+}
+
+function hideSkipButton() {
+  if (skipButtonTimeout) {
+    clearTimeout(skipButtonTimeout);
+    skipButtonTimeout = null;
+  }
+  if (skipTaskBtn) {
+    skipTaskBtn.style.display = "none";
+  }
 }
 
 function checkTaskCompletion() {
@@ -547,12 +691,76 @@ setInterval(() => {
 }, 500);
 
 /* ===== Session & Export ===== */
-// "Fertig"-Button im Thank You Modal
-document.getElementById("finishBtn").onclick = () => {
+// Navigation: Thank You → Export Modal
+document.getElementById("continueToExport").onclick = () => {
+  const thankYouModal = document.getElementById("thankYouModal");
+  const exportModal = document.getElementById("exportModal");
+  if (thankYouModal) thankYouModal.style.display = "none";
+  if (exportModal) exportModal.style.display = "flex";
+};
+
+// Export User Data Button
+document.getElementById("exportUserDataBtn").onclick = () => {
   try {
-    exportAllData();
+    const sessionId = localStorage.getItem("session_id_v1") || "unknown";
+    const demographics = {
+      session_id: sessionId,
+      age: localStorage.getItem("user_age_v1") || "",
+      gender: localStorage.getItem("user_gender_v1") || "",
+      occupation: localStorage.getItem("user_occupation_v1") || "",
+      digital_affinity: localStorage.getItem("user_digital_affinity_v1") || "",
+      emotion_before: localStorage.getItem("emotion_before_v1") || "",
+      activation_before: localStorage.getItem("activation_before_v1") || "",
+      emotion_after: localStorage.getItem("emotion_after_v1") || "",
+      activation_after: localStorage.getItem("activation_after_v1") || ""
+    };
+    exportUserDataCSV(demographics);
+    
+    // Visuelles Feedback
+    const btn = document.getElementById("exportUserDataBtn");
+    const originalText = btn.textContent;
+    btn.textContent = "✓ User Data heruntergeladen";
+    btn.style.background = "#10b981";
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = "#08a0f7";
+    }, 2000);
   } catch(e) {
-    console.error("Export error:", e);
+    console.error("User data export error:", e);
+    alert("Fehler beim Export der User-Daten: " + e.message);
+  }
+};
+
+// Export Touch Data Button
+document.getElementById("exportTouchDataBtn").onclick = () => {
+  try {
+    const sessionId = localStorage.getItem("session_id_v1") || "unknown";
+    if(gestures.length === 0) {
+      alert("Keine Touch-Daten erfasst.");
+      return;
+    }
+    exportTouchDataCSV(sessionId);
+    
+    // Visuelles Feedback
+    const btn = document.getElementById("exportTouchDataBtn");
+    const originalText = btn.textContent;
+    btn.textContent = "✓ Touch Data heruntergeladen";
+    btn.style.background = "#10b981";
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = "#08a0f7";
+    }, 2000);
+  } catch(e) {
+    console.error("Touch data export error:", e);
+    alert("Fehler beim Export der Touch-Daten: " + e.message);
+  }
+};
+
+// "Fertig"-Button im Export Modal
+document.getElementById("finishBtn").onclick = () => {
+  // Einfach die Seite schließen oder zurücksetzen
+  if (confirm("Studie abgeschlossen! Möchten Sie die Seite neu laden?")) {
+    location.reload();
   }
 };
 
@@ -595,6 +803,51 @@ document.getElementById("resetUser").onclick = () => {
     setTimeout(() => {
       location.reload();
     }, 500);
+  }
+};
+
+// "Aufgabe überspringen"-Button
+document.getElementById("skipTaskBtn").onclick = () => {
+  if (!isSessionActive || currentTaskIndex >= TASKS.length) return;
+  
+  const task = TASKS[currentTaskIndex];
+  const sessionId = localStorage.getItem("session_id_v1") || "unknown";
+  
+  // Erstelle einen speziellen "Skip"-Eintrag in den Gestures
+  const skipEntry = {
+    session_id: sessionId,
+    currentTaskNumber: task.id,
+    screen: "TASK_SKIPPED",
+    downISO: new Date().toISOString(),
+    upISO: new Date().toISOString(),
+    durationMs: 0,
+    lengthPx: 0,
+    type: "skip",
+    pathDeviationPx: 0,
+    directDistancePx: 0,
+    minSpeedPxMs: 0,
+    maxSpeedPxMs: 0
+  };
+  
+  gestures.push(skipEntry);
+  console.log(`Task ${task.id} übersprungen:`, skipEntry);
+  
+  // Gehe zur nächsten Aufgabe
+  taskStateStartTime = null;
+  currentTaskIndex++;
+  
+  if (currentTaskIndex >= TASKS.length) {
+    // Alle Aufgaben abgeschlossen - zeige Emotions-Modal (nachher)
+    hideSkipButton();
+    updateTaskDisplay();
+    setTimeout(() => {
+      const emotionModalAfter = document.getElementById("emotionModalAfter");
+      if (emotionModalAfter) {
+        emotionModalAfter.style.display = "flex";
+      }
+    }, 500);
+  } else {
+    updateTaskDisplay();
   }
 };
 

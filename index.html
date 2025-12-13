@@ -7,12 +7,18 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Hintergrundmusik -->
+  <audio id="backgroundMusic" loop>
+    <source src="Songs/2019.mp3" type="audio/mpeg">
+  </audio>
+
   <!-- Dünne Top-Bar -->
   <header id="topbar">
     <div id="topbar-left">
       <span id="instruction" style="font-size:16px; font-weight:600; color:#e8f3ff;">Tippe eine Kachel an, um das Untermenü zu öffnen.</span>
     </div>
     <div id="topbar-right">
+      <button id="skipTaskBtn" style="display:none; background:#f59e0b; margin-right:8px;">Aufgabe überspringen</button>
       <button id="resetUser">Reset</button>
     </div>
   </header>
@@ -34,6 +40,16 @@
 
   <!-- Welcome Modal - Fullscreen -->
   <div id="welcomeModal" style="display:flex; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column;">
+    
+    <!-- Dropdown für Bedingungsauswahl (oben) -->
+    <div style="position:absolute; top:20px; left:50%; transform:translateX(-50%); z-index:10000;">
+      <select id="conditionSelect" style="padding:8px 16px; border:1px solid #505353; border-radius:8px; background:#232525; color:#e8f3ff; font-size:14px; cursor:pointer;">
+        <option value="A">Bedingung A</option>
+        <option value="B">Bedingung B</option>
+        <option value="C">Bedingung C</option>
+      </select>
+    </div>
+
     <!-- Seiten-Container -->
     <div id="welcomePages" style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;">
       
@@ -112,6 +128,16 @@
               Weiter
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Seite 2.5: Bildergalerie (automatische Diashow) -->
+      <div id="welcomePageImages" class="welcomePage" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; width:100%; height:100%; background:#0a0f1a;">
+        <div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;">
+          <div id="imageInstruction" style="color:#e8f3ff; font-size:18px; font-weight:600; margin-bottom:40px; text-align:center; padding:0 20px;">
+            Bitte schauen Sie sich die folgenden 5 Bilder genau an.
+          </div>
+          <img id="slideshowImage" src="" alt="Bild" style="max-width:90%; max-height:70%; object-fit:contain; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
         </div>
       </div>
 
@@ -468,11 +494,46 @@
         Ihre Daten wurden erfasst und sind bereit zum Export.
       </p>
       <button 
-        id="finishBtn"
+        id="continueToExport"
         style="padding:20px 48px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:18px;"
       >
-        Fertig
+        Weiter zum Export
       </button>
+    </div>
+  </div>
+
+  <!-- Export Modal - Fullscreen -->
+  <div id="exportModal" style="display:none; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column;">
+    <div style="max-width:600px; width:100%; padding:40px; text-align:center;">
+      <h1 style="margin:0 0 24px 0; font-size:42px; color:#e8f3ff;">Daten exportieren</h1>
+      <p style="color:#9fb0bf; line-height:1.8; margin:0 0 40px 0; font-size:16px;">
+        Bitte laden Sie beide Dateien herunter, um die Studie abzuschließen.<br>
+        Klicken Sie nacheinander auf beide Buttons.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:16px; max-width:400px; margin:0 auto;">
+        <button 
+          id="exportUserDataBtn"
+          style="padding:18px 32px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; transition:all 0.2s;"
+        >
+          📄 User Data CSV herunterladen
+        </button>
+        <button 
+          id="exportTouchDataBtn"
+          style="padding:18px 32px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; transition:all 0.2s;"
+        >
+          📊 Touch Data CSV herunterladen
+        </button>
+        <button 
+          id="finishBtn"
+          style="padding:18px 32px; background:#505353; color:#e8f3ff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; margin-top:24px; transition:all 0.2s;"
+        >
+          ✓ Fertig
+        </button>
+      </div>
+      <p style="color:#9fb0bf; font-size:14px; margin-top:32px; line-height:1.6;">
+        <strong>Hinweis:</strong> Auf dem iPad erscheint eine Download-Anfrage.<br>
+        Die Dateien werden im Downloads-Ordner oder in der Dateien-App gespeichert.
+      </p>
     </div>
   </div>
 
