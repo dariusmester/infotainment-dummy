@@ -2,8 +2,6 @@
 function initWelcomeForm() {
   const modal = document.getElementById("welcomeModal");
   const nameInput = document.getElementById("userNameInput");
-  const ageInput = document.getElementById("userAgeInput");
-  const occupationInput = document.getElementById("userOccupationInput");
   const page1 = document.getElementById("welcomePage1");
   const page2 = document.getElementById("welcomePage2");
   const page3 = document.getElementById("welcomePage3");
@@ -56,22 +54,7 @@ function initWelcomeForm() {
   // Navigation Seite 2 → Seite 3
   if (nextBtn2) {
     nextBtn2.addEventListener("click", () => {
-      const age = ageInput?.value?.trim();
-      const genderRadio = document.querySelector('input[name="gender"]:checked');
-      const gender = genderRadio?.value;
-      const occupation = occupationInput?.value;
-      
-      if (!age || !gender || !occupation) {
-        alert("Bitte füllen Sie alle Felder aus.");
-        return;
-      }
-      
-      // Demographische Daten speichern
-      localStorage.setItem("user_age_v1", age);
-      localStorage.setItem("user_gender_v1", gender);
-      localStorage.setItem("user_occupation_v1", occupation);
-      
-      // Zu Seite 3 wechseln
+      // Zu Seite 3 wechseln (Emotionen vorher)
       if (page2 && page3) {
         page2.style.display = "none";
         page3.style.display = "flex";
@@ -89,9 +72,33 @@ function initWelcomeForm() {
     });
   }
   
-  // Seite 3 abschließen (Starten-Button)
+  // Seite 3 abschließen (Starten-Button) - Emotionen vorher speichern und Session starten
   if (nextBtn3) {
     nextBtn3.addEventListener("click", () => {
+      const emotionBefore = document.querySelector('input[name="emotion_before"]:checked');
+      const activationBefore = document.querySelector('input[name="activation_before"]:checked');
+      
+      if (!emotionBefore || !activationBefore) {
+        alert("Bitte beantworten Sie beide Fragen.");
+        return;
+      }
+      
+      // Emotionale Daten (vorher) speichern
+      localStorage.setItem("emotion_before_v1", emotionBefore.value);
+      localStorage.setItem("activation_before_v1", activationBefore.value);
+      
+      // Session automatisch starten
+      loadTestDefaults(); // Lade Test-Einstellungen, die von Aufgaben abweichen
+      gestures.length=0; 
+      touchInputLog.length=0;
+      isSessionActive=true;
+      currentTaskIndex = 0;
+      taskStateStartTime = null;
+      // Farbe zurücksetzen
+      instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
+      updateTaskDisplay();
+      if(featuresArea) featuresArea.textContent=""; 
+      
       // Modal verbergen und zur App gehen
       modal.style.display = "none";
     });
@@ -114,6 +121,63 @@ function initWelcomeForm() {
     console.log("Hiding welcome modal, user:", savedName);
     modal.style.display = "none";
     if (nameInput) nameInput.value = savedName;
+  }
+  
+  // Event-Listener für Emotions-Modal (nachher) -> Thank You Modal
+  const continueToThankYouBtn = document.getElementById("continueToThankYou");
+  if (continueToThankYouBtn) {
+    continueToThankYouBtn.addEventListener("click", () => {
+      const emotionAfter = document.querySelector('input[name="emotion_after"]:checked');
+      const activationAfter = document.querySelector('input[name="activation_after"]:checked');
+      
+      if (!emotionAfter || !activationAfter) {
+        alert("Bitte beantworten Sie beide Fragen.");
+        return;
+      }
+      
+      // Emotionale Daten (nachher) speichern
+      localStorage.setItem("emotion_after_v1", emotionAfter.value);
+      localStorage.setItem("activation_after_v1", activationAfter.value);
+      
+      // Zeige Demographics Modal
+      const emotionModalAfter = document.getElementById("emotionModalAfter");
+      const demographicsModal = document.getElementById("demographicsModal");
+      if (emotionModalAfter) emotionModalAfter.style.display = "none";
+      if (demographicsModal) demographicsModal.style.display = "flex";
+    });
+  }
+
+  // Navigation Demographics → Thank You
+  const continueToDemographicsToThankYouBtn = document.getElementById("continueToDemographicsToThankYou");
+  if (continueToDemographicsToThankYouBtn) {
+    continueToDemographicsToThankYouBtn.addEventListener("click", () => {
+      const ageInput = document.getElementById("userAgeInput");
+      const genderRadio = document.querySelector('input[name="gender"]:checked');
+      const occupationInput = document.getElementById("userOccupationInput");
+      const digitalAffinityRadio = document.querySelector('input[name="digital_affinity"]:checked');
+      
+      const age = ageInput?.value?.trim();
+      const gender = genderRadio?.value;
+      const occupation = occupationInput?.value;
+      const digitalAffinity = digitalAffinityRadio?.value;
+      
+      if (!age || !gender || !occupation || !digitalAffinity) {
+        alert("Bitte füllen Sie alle Felder aus.");
+        return;
+      }
+      
+      // Demographische Daten speichern
+      localStorage.setItem("user_age_v1", age);
+      localStorage.setItem("user_gender_v1", gender);
+      localStorage.setItem("user_occupation_v1", occupation);
+      localStorage.setItem("user_digital_affinity_v1", digitalAffinity);
+      
+      // Zeige Thank You Modal
+      const demographicsModal = document.getElementById("demographicsModal");
+      const thankYouModal = document.getElementById("thankYouModal");
+      if (demographicsModal) demographicsModal.style.display = "none";
+      if (thankYouModal) thankYouModal.style.display = "flex";
+    });
   }
 }
 
@@ -427,13 +491,13 @@ function checkTaskCompletion() {
         currentTaskIndex++;
         
         if (currentTaskIndex >= TASKS.length) {
-          // Alle Aufgaben abgeschlossen - zeige "Vielen Dank"-Seite
+          // Alle Aufgaben abgeschlossen - zeige Emotions-Modal (nachher)
           updateTaskDisplay();
-          // Warte kurz, dann zeige Thank You Modal
+          // Warte kurz, dann zeige Emotion Modal After
           setTimeout(() => {
-            const thankYouModal = document.getElementById("thankYouModal");
-            if (thankYouModal) {
-              thankYouModal.style.display = "flex";
+            const emotionModalAfter = document.getElementById("emotionModalAfter");
+            if (emotionModalAfter) {
+              emotionModalAfter.style.display = "flex";
             }
           }, 500);
         } else {
@@ -460,34 +524,6 @@ setInterval(() => {
 }, 500);
 
 /* ===== Session & Export ===== */
-document.getElementById("toggleSession").onclick = ()=>{ 
-  if(isSessionActive){
-    // Session beenden
-    isSessionActive = false;
-    currentTaskIndex = 0;
-    taskStateStartTime = null;
-    document.getElementById("toggleSession").textContent = "Start Session";
-    // Farbe zurücksetzen
-    instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
-    updateTaskDisplay();
-  } else {
-    // Session starten
-    loadTestDefaults(); // Lade Test-Einstellungen, die von Aufgaben abweichen
-    gestures.length=0; 
-    touchInputLog.length=0;
-    isSessionActive=true;
-    currentTaskIndex = 0;
-    taskStateStartTime = null;
-    document.getElementById("toggleSession").textContent = "End Session";
-    // Farbe zurücksetzen
-    instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
-    updateTaskDisplay();
-    if(featuresArea) featuresArea.textContent=""; 
-  }
-};
-
-document.getElementById("exportData").onclick = exportAllData;
-
 // "Fertig"-Button im Thank You Modal
 document.getElementById("finishBtn").onclick = () => {
   try {
@@ -504,7 +540,12 @@ document.getElementById("resetUser").onclick = () => {
     localStorage.removeItem("user_age_v1");
     localStorage.removeItem("user_gender_v1");
     localStorage.removeItem("user_occupation_v1");
+    localStorage.removeItem("user_digital_affinity_v1");
     localStorage.removeItem("session_id_v1");
+    localStorage.removeItem("emotion_before_v1");
+    localStorage.removeItem("activation_before_v1");
+    localStorage.removeItem("emotion_after_v1");
+    localStorage.removeItem("activation_after_v1");
     localStorage.removeItem("active_user_v1");
     localStorage.removeItem("music_player_v1");
     localStorage.removeItem("climate_state_v3");
@@ -524,7 +565,6 @@ document.getElementById("resetUser").onclick = () => {
     touchInputLog.length = 0;
     
     // UI zurücksetzen
-    document.getElementById("toggleSession").textContent = "Start Session";
     instruction.style.color = INSTRUCTION_DEFAULT_COLOR;
     updateTaskDisplay();
     
@@ -547,17 +587,22 @@ function exportAllData(){
     session_id: sessionId,
     age: localStorage.getItem("user_age_v1") || "",
     gender: localStorage.getItem("user_gender_v1") || "",
-    occupation: localStorage.getItem("user_occupation_v1") || ""
+    occupation: localStorage.getItem("user_occupation_v1") || "",
+    digital_affinity: localStorage.getItem("user_digital_affinity_v1") || "",
+    emotion_before: localStorage.getItem("emotion_before_v1") || "",
+    activation_before: localStorage.getItem("activation_before_v1") || "",
+    emotion_after: localStorage.getItem("emotion_after_v1") || "",
+    activation_after: localStorage.getItem("activation_after_v1") || ""
   };
   
   // Export 1: Nutzerdaten CSV
   exportUserDataCSV(demographics);
   
-  // Export 2: Touch-Daten CSV
+  // Export 2: Touch-Daten CSV (mit Delay, damit Browser beide Downloads erlaubt)
   if(gestures.length > 0){
     setTimeout(() => {
       exportTouchDataCSV(sessionId);
-    }, 100);
+    }, 500);
   } else {
     alert("Keine Touch-Daten erfasst.");
   }
@@ -1099,23 +1144,33 @@ function round2(x){ return Math.round(x*100)/100; }
 function round3(x){ return Math.round(x*1000)/1000; }
 function appendFeatures(header,row){ if(!featuresArea.textContent.trim()){ featuresArea.textContent = header+"\n"+row; } else { featuresArea.textContent += "\n"+row; } }
 function exportUserDataCSV(demographics){
-  // CSV mit einer Zeile für die Nutzerdaten
-  const header = ["session_id", "age", "gender", "occupation"];
+  console.log("Exporting user data:", demographics);
+  
+  // CSV mit einer Zeile für die Nutzerdaten inklusive emotionaler Daten und digitaler Affinität
+  const header = ["session_id", "age", "gender", "occupation", "digital_affinity", "emotion_before", "activation_before", "emotion_after", "activation_after"];
   const row = [
     formatCSV(demographics.session_id),
     formatCSV(demographics.age),
     formatCSV(demographics.gender),
-    formatCSV(demographics.occupation)
+    formatCSV(demographics.occupation),
+    formatCSV(demographics.digital_affinity),
+    formatCSV(demographics.emotion_before),
+    formatCSV(demographics.activation_before),
+    formatCSV(demographics.emotion_after),
+    formatCSV(demographics.activation_after)
   ].join(",");
   
-  downloadCSV(`user_data_${demographics.session_id}.csv`, header.join(",") + "\n" + row);
+  const csvContent = header.join(",") + "\n" + row;
+  console.log("User CSV content:", csvContent);
+  
+  downloadCSV(`user_data_${demographics.session_id}.csv`, csvContent);
 }
 
 function exportTouchDataCSV(sessionId){
   if(!gestures.length){ alert("Keine Touch-Daten."); return; }
   
   // Header mit session_id als erstes Feld
-  const header=["session_id","currentTaskNumber","screen","task","stepIndex","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx","directDistancePx","minSpeedPxMs","maxSpeedPxMs"];
+  const header=["session_id","currentTaskNumber","screen","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx","directDistancePx","minSpeedPxMs","maxSpeedPxMs"];
   
   // Rows mit session_id für jede Zeile
   const rows=gestures.map(g=>{
@@ -1123,8 +1178,6 @@ function exportTouchDataCSV(sessionId){
       session_id: sessionId,
       currentTaskNumber: g.currentTaskNumber || "",
       screen: g.screen || "",
-      task: g.task || "",
-      stepIndex: g.stepIndex ?? "",
       downISO: g.downISO || "",
       upISO: g.upISO || "",
       durationMs: g.durationMs ?? "",
@@ -2746,8 +2799,10 @@ function renderBluetooth(){
     <div style="padding:12px 12px 0 12px; display:flex; flex-direction:column; gap:12px; height:100%;">
       <div style="font-weight:700; font-size:18px;">Bluetooth</div>
       <div style="font-size:13px; color:#9fb0bf;">Verbundenes Gerät: <span id="btActive">${active ? active : 'Keines'}</span></div>
-      <div id="btList" class="scroll" style="flex:1; position:relative; border-top:1px solid var(--secondarycolor);">
-        <div class="inner"></div>
+      <div style="flex:1; position:relative; border-top:1px solid var(--secondarycolor);">
+        <div id="btList" class="scroll">
+          <div class="inner"></div>
+        </div>
       </div>
     </div>
   `;
