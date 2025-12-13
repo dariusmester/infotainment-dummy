@@ -598,11 +598,11 @@ function exportAllData(){
   // Export 1: Nutzerdaten CSV
   exportUserDataCSV(demographics);
   
-  // Export 2: Touch-Daten CSV (mit Delay, damit Browser beide Downloads erlaubt)
+  // Export 2: Touch-Daten CSV (mit längerem Delay für Safari/iPad Kompatibilität)
   if(gestures.length > 0){
     setTimeout(() => {
       exportTouchDataCSV(sessionId);
-    }, 500);
+    }, 1000);
   } else {
     alert("Keine Touch-Daten erfasst.");
   }
@@ -1194,7 +1194,24 @@ function exportTouchDataCSV(sessionId){
   downloadCSV(`touch_data_${sessionId}.csv`, header.join(",")+"\n"+rows.join("\n"));
 }
 function formatCSV(v){ if(typeof v==="string"&&(v.includes(",")||v.includes('"'))) return `"${v.replace(/"/g,'""')}"`; return v ?? ""; }
-function downloadCSV(name,text){ const blob=new Blob([text],{type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+function downloadCSV(name, text) { 
+  const blob = new Blob([text], {type: "text/csv;charset=utf-8;"}); 
+  const url = URL.createObjectURL(blob); 
+  const a = document.createElement("a"); 
+  a.href = url; 
+  a.download = name; 
+  a.style.display = "none";
+  document.body.appendChild(a); 
+  
+  // Safari/iPad benötigt einen kleinen Delay
+  setTimeout(() => {
+    a.click(); 
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url); 
+    }, 100);
+  }, 0);
+}
 
 /* ===== Realistische Widgets (Scroll, Map, Slider) ===== */
 function makeInertiaScroll(container){
