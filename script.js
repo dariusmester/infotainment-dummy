@@ -729,6 +729,7 @@ document.getElementById("exportUserDataBtn").onclick = () => {
     const sessionId = localStorage.getItem("session_id_v1") || "unknown";
     const demographics = {
       session_id: sessionId,
+      condition: localStorage.getItem("selected_condition_v1") || "A",
       age: localStorage.getItem("user_age_v1") || "",
       gender: localStorage.getItem("user_gender_v1") || "",
       occupation: localStorage.getItem("user_occupation_v1") || "",
@@ -885,6 +886,7 @@ function exportAllData(){
   const sessionId = localStorage.getItem("session_id_v1") || "unknown";
   const demographics = {
     session_id: sessionId,
+    condition: localStorage.getItem("selected_condition_v1") || "A",
     age: localStorage.getItem("user_age_v1") || "",
     gender: localStorage.getItem("user_gender_v1") || "",
     occupation: localStorage.getItem("user_occupation_v1") || "",
@@ -1446,10 +1448,11 @@ function appendFeatures(header,row){ if(!featuresArea.textContent.trim()){ featu
 function exportUserDataCSV(demographics){
   console.log("Exporting user data:", demographics);
   
-  // CSV mit einer Zeile für die Nutzerdaten inklusive emotionaler Daten und digitaler Affinität
-  const header = ["session_id", "age", "gender", "occupation", "digital_affinity", "emotion_before", "activation_before", "emotion_after", "activation_after"];
+  // CSV mit einer Zeile für die Nutzerdaten inklusive emotionaler Daten, digitaler Affinität und Bedingung
+  const header = ["session_id", "condition", "age", "gender", "occupation", "digital_affinity", "emotion_before", "activation_before", "emotion_after", "activation_after"];
   const row = [
     formatCSV(demographics.session_id),
+    formatCSV(demographics.condition),
     formatCSV(demographics.age),
     formatCSV(demographics.gender),
     formatCSV(demographics.occupation),
