@@ -616,6 +616,11 @@ function updateTaskDisplay() {
     // Für Aufgabe 1: "Wähle dein Nutzerprofil" → "Wähle dein Nutzerprofil (NAME)"
     taskText = `Wähle dein Nutzerprofil (${userName})`;
   }
+  if (userName && task.id === 5) {
+    // Für Aufgabe 5: "Verbinde dein Handy..." → "Verbinde dein Handy (Handy - NAME)..."
+    const deviceName = `Handy – ${userName}`;
+    taskText = `Verbinde dein Handy (${deviceName}) mit Bluetooth und rufe Hannah Klein an`;
+  }
   
   instruction.textContent = `Aufgabe ${task.id}/9: ${taskText}`;
   
