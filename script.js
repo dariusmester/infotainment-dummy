@@ -176,8 +176,8 @@ function initWelcomeForm() {
         currentIndex++;
         
         if (currentIndex < images.length) {
-          // Nächstes Bild nach 10 Sekunden
-          setTimeout(showNextImage, 10000);
+          // Nächstes Bild nach 5 Sekunden
+          setTimeout(showNextImage, 5000);
         } else {
           // Alle Bilder gezeigt - gehe zu Seite 3
           setTimeout(() => {
@@ -187,7 +187,7 @@ function initWelcomeForm() {
               pageImages.style.display = "none";
               page3.style.display = "flex";
             }
-          }, 10000); // Letztes Bild auch 10 Sekunden anzeigen
+          }, 5000); // Letztes Bild auch 5 Sekunden anzeigen
         }
       }
     }
@@ -457,10 +457,10 @@ const TASKS = [
   },
   {
     id: 3,
-    text: "Stelle die Beifahrer Temperatur auf 25° und die Gebläsestärke auf 7",
+    text: "Stelle die Fahrer Temperatur auf 25° und die Gebläsestärke auf 7",
     check: () => {
       const climateState = JSON.parse(localStorage.getItem('climate_state_v3') || '{}');
-      return climateState.temp?.passenger === 25 && 
+      return climateState.temp?.driver === 25 && 
              climateState.fan?.level === 7;
     }
   },
@@ -539,7 +539,7 @@ function loadTestDefaults() {
   };
   localStorage.setItem('music_player_v1', JSON.stringify(musicState));
   
-  // Task 3: Erwartet passenger=25, fan=7 → Setze andere Werte
+  // Task 3: Erwartet driver=25, fan=7 → Setze andere Werte
   const climateState = {
     temp: { enabled: true, driver: 22.0, passenger: 22.0, rear: 21.0, sync: false },
     fan: { enabled: true, level: 1, acOn: true, airflow: { face: true, feet: false, windshield: false, rear: false } }
@@ -608,7 +608,16 @@ function updateTaskDisplay() {
   }
   
   const task = TASKS[currentTaskIndex];
-  instruction.textContent = `Aufgabe ${task.id}/9: ${task.text}`;
+  
+  // Text mit dynamischem Namen anpassen (falls vorhanden)
+  let taskText = task.text;
+  const userName = localStorage.getItem('user_name_v1');
+  if (userName && task.id === 1) {
+    // Für Aufgabe 1: "Wähle dein Nutzerprofil" → "Wähle dein Nutzerprofil (NAME)"
+    taskText = `Wähle dein Nutzerprofil (${userName})`;
+  }
+  
+  instruction.textContent = `Aufgabe ${task.id}/9: ${taskText}`;
   
   // Starte Timer für Skip-Button (15 Sekunden)
   startSkipButtonTimer();
