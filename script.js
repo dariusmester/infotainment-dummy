@@ -297,14 +297,16 @@ function initWelcomeForm() {
       const ageInput = document.getElementById("userAgeInput");
       const genderRadio = document.querySelector('input[name="gender"]:checked');
       const occupationInput = document.getElementById("userOccupationInput");
+      const educationInput = document.getElementById("userEducationInput");
       const digitalAffinityRadio = document.querySelector('input[name="digital_affinity"]:checked');
       
       const age = ageInput?.value?.trim();
       const gender = genderRadio?.value;
       const occupation = occupationInput?.value;
+      const education = educationInput?.value;
       const digitalAffinity = digitalAffinityRadio?.value;
       
-      if (!age || !gender || !occupation || !digitalAffinity) {
+      if (!age || !gender || !occupation || !education || !digitalAffinity) {
         alert("Bitte füllen Sie alle Felder aus.");
         return;
       }
@@ -313,6 +315,7 @@ function initWelcomeForm() {
       localStorage.setItem("user_age_v1", age);
       localStorage.setItem("user_gender_v1", gender);
       localStorage.setItem("user_occupation_v1", occupation);
+      localStorage.setItem("user_education_v1", education);
       localStorage.setItem("user_digital_affinity_v1", digitalAffinity);
       
       // Zeige Thank You Modal
@@ -733,6 +736,7 @@ document.getElementById("exportUserDataBtn").onclick = () => {
       age: localStorage.getItem("user_age_v1") || "",
       gender: localStorage.getItem("user_gender_v1") || "",
       occupation: localStorage.getItem("user_occupation_v1") || "",
+      education: localStorage.getItem("user_education_v1") || "",
       digital_affinity: localStorage.getItem("user_digital_affinity_v1") || "",
       emotion_before: localStorage.getItem("emotion_before_v1") || "",
       activation_before: localStorage.getItem("activation_before_v1") || "",
@@ -890,6 +894,7 @@ function exportAllData(){
     age: localStorage.getItem("user_age_v1") || "",
     gender: localStorage.getItem("user_gender_v1") || "",
     occupation: localStorage.getItem("user_occupation_v1") || "",
+    education: localStorage.getItem("user_education_v1") || "",
     digital_affinity: localStorage.getItem("user_digital_affinity_v1") || "",
     emotion_before: localStorage.getItem("emotion_before_v1") || "",
     activation_before: localStorage.getItem("activation_before_v1") || "",
@@ -1448,14 +1453,15 @@ function appendFeatures(header,row){ if(!featuresArea.textContent.trim()){ featu
 function exportUserDataCSV(demographics){
   console.log("Exporting user data:", demographics);
   
-  // CSV mit einer Zeile für die Nutzerdaten inklusive emotionaler Daten, digitaler Affinität und Bedingung
-  const header = ["session_id", "condition", "age", "gender", "occupation", "digital_affinity", "emotion_before", "activation_before", "emotion_after", "activation_after"];
+  // CSV mit einer Zeile für die Nutzerdaten inklusive emotionaler Daten, digitaler Affinität, Bildungsgrad und Bedingung
+  const header = ["session_id", "condition", "age", "gender", "occupation", "education", "digital_affinity", "emotion_before", "activation_before", "emotion_after", "activation_after"];
   const row = [
     formatCSV(demographics.session_id),
     formatCSV(demographics.condition),
     formatCSV(demographics.age),
     formatCSV(demographics.gender),
     formatCSV(demographics.occupation),
+    formatCSV(demographics.education),
     formatCSV(demographics.digital_affinity),
     formatCSV(demographics.emotion_before),
     formatCSV(demographics.activation_before),

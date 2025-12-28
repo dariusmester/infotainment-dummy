@@ -435,6 +435,28 @@
           </select>
         </div>
         
+        <!-- Höchster Bildungsgrad -->
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <label for="userEducationInput" style="font-weight:600; color:#e8f3ff; font-size:16px;">Höchster Bildungsgrad:</label>
+          <select 
+            id="userEducationInput" 
+            style="padding:16px; border:1px solid #505353; border-radius:8px; background:#232525; color:#e8f3ff; font-size:16px; cursor:pointer;"
+            required
+          >
+            <option value="" disabled selected>Bitte wählen...</option>
+            <option value="Kein Abschluss">Kein Abschluss</option>
+            <option value="Hauptschulabschluss">Hauptschulabschluss</option>
+            <option value="Realschulabschluss">Realschulabschluss</option>
+            <option value="Fachhochschulreife">Fachhochschulreife</option>
+            <option value="Abitur">Abitur</option>
+            <option value="Berufsausbildung">Berufsausbildung</option>
+            <option value="Bachelor">Bachelor</option>
+            <option value="Master">Master</option>
+            <option value="Promotion">Promotion</option>
+            <option value="Sonstiges">Sonstiges</option>
+          </select>
+        </div>
+        
         <!-- Digitale Affinität -->
         <div style="display:flex; flex-direction:column; gap:8px;">
           <label style="font-weight:600; color:#e8f3ff; font-size:16px; text-align:center;">Digitale Affinität:</label>
