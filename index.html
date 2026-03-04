@@ -153,20 +153,16 @@
         <div style="max-width:700px; width:100%;">
           <h1 style="margin:0 0 16px 0; font-size:36px; color:#e8f3ff; text-align:center;">Ihr emotionaler Zustand</h1>
           <p style="color:#9fb0bf; line-height:1.8; margin:0 0 32px 0; font-size:16px; text-align:center;">
-            Bitte beantworten Sie die folgenden Fragen zu Ihrem aktuellen Befinden.
+            Bitte ordnen Sie ihr aktuelles Befinden anhand der folgenden Bilder ein.
           </p>
           
           <form id="emotionFormBefore" style="display:flex; flex-direction:column; gap:32px;">
             <!-- Frage 1: Emotionaler Zustand -->
             <div style="display:flex; flex-direction:column; gap:12px;">
               <label style="font-weight:600; color:#e8f3ff; font-size:18px; text-align:center;">
-                Wie empfinden Sie Ihren emotionalen Zustand im Moment?
+                Valenz
               </label>
-              <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-                <div style="display:flex; justify-content:space-between; color:#9fb0bf; font-size:14px; padding:0 8px;">
-                  <span>Sehr negativ</span>
-                  <span>Sehr positiv</span>
-                </div>
+              <img src="images/Valence.jpeg" alt="Bild" style="max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
                 <div style="display:flex; justify-content:space-between; gap:8px;">
                   <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
                     <input type="radio" name="emotion_before" value="1" required style="width:20px; height:20px;">
@@ -197,19 +193,15 @@
                     <span style="color:#e8f3ff; font-size:12px;">7</span>
                   </label>
                 </div>
-              </div>
+
             </div>
 
             <!-- Frage 2: Aufregung -->
             <div style="display:flex; flex-direction:column; gap:12px;">
               <label style="font-weight:600; color:#e8f3ff; font-size:18px; text-align:center;">
-                Wie aufgeregt fühlen Sie sich im Moment?
+                Arousal
               </label>
-              <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-                <div style="display:flex; justify-content:space-between; color:#9fb0bf; font-size:14px; padding:0 8px;">
-                  <span>Sehr ruhig/gelassen</span>
-                  <span>Sehr aufgeregt/nervös</span>
-                </div>
+              <img src="images/Arousal.jpeg" alt="Bild" style="max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
                 <div style="display:flex; justify-content:space-between; gap:8px;">
                   <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
                     <input type="radio" name="activation_before" value="1" required style="width:20px; height:20px;">
@@ -240,7 +232,7 @@
                     <span style="color:#e8f3ff; font-size:12px;">7</span>
                   </label>
                 </div>
-              </div>
+              
             </div>
           </form>
 

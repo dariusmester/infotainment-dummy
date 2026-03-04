@@ -1211,18 +1211,9 @@ function onUpCancel(e){
   const lengthPx = calcStrokeLength(s.points);
   const isTap = lengthPx <= TAP_THRESHOLD_PX;
   const durationMs = s.upTime - s.downTime;
-  
-  // Berechne direkte Distanz zwischen Start und End
-  const directDistancePx = isTap ? 0 : Math.hypot(
-    e.clientX - s.downPos.x,
-    e.clientY - s.downPos.y
-  );
-  
-  const directionChanges = isTap ? 0 : calcDirectionChanges(s.points);
-  const pathDeviation = isTap ? 0 : calcPathDeviation(s.points);
-  
-  // Berechne Min/Max Geschwindigkeit
-  const speedStats = isTap ? { min: 0, max: 0 } : calcSpeedMinMax(s.points);
+
+  // Maximalgeschwindigkeit der Geste (px/ms)
+  const speedStats = calcSpeedMinMax(s.points);
   
   // Aktuelle Funktion ermitteln (welche App/View ist aktiv)
   const currentFunction = getCurrentFunction();
@@ -1241,9 +1232,6 @@ function onUpCancel(e){
     downISO:new Date(s.downTime).toISOString(), upISO:new Date(s.upTime).toISOString(),
     durationMs, lengthPx:Math.round(lengthPx),
     isTap, type: isTap ? "tap" : "swipe",
-    pathDeviationPx: Math.round(pathDeviation),
-    directDistancePx: Math.round(directDistancePx),
-    minSpeedPxMs: Number(speedStats.min.toFixed(3)),
     maxSpeedPxMs: Number(speedStats.max.toFixed(3))
   });
   
@@ -1271,10 +1259,6 @@ function onUpCancel(e){
     },
     duration_ms: durationMs,
     length_px: Math.round(lengthPx),
-    direct_distance_px: Math.round(directDistancePx),
-    direction_changes: directionChanges,
-    path_deviation_px: Math.round(pathDeviation),
-    min_speed_px_ms: Number(speedStats.min.toFixed(3)),
     max_speed_px_ms: Number(speedStats.max.toFixed(3))
   });
   
@@ -1288,74 +1272,6 @@ function calcStrokeLength(pts){
     s+=Math.hypot(dx,dy);
   } 
   return s; 
-}
-
-function calcDirectionChanges(pts){
-  if(pts.length < 3) return 0;
-  
-  let changes = 0;
-  let prevAngle = null;
-  
-  for(let i=1; i<pts.length; i++){
-    const dx = pts[i].x - pts[i-1].x;
-    const dy = pts[i].y - pts[i-1].y;
-    const distance = Math.hypot(dx, dy);
-    
-    // Ignoriere sehr kleine Bewegungen (Rauschen)
-    if(distance < 2) continue;
-    
-    const angle = Math.atan2(dy, dx);
-    
-    if(prevAngle !== null){
-      let angleDiff = Math.abs(angle - prevAngle);
-      // Normalisiere auf 0-π
-      if(angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
-      
-      // Zähle als Richtungsänderung wenn > 30 Grad (π/6)
-      if(angleDiff > Math.PI / 6){
-        changes++;
-      }
-    }
-    
-    prevAngle = angle;
-  }
-  
-  return changes;
-}
-
-function calcPathDeviation(pts){
-  // Berechnet die durchschnittliche Abweichung von der idealen geraden Linie
-  // zwischen Start- und Endpunkt
-  if(pts.length < 3) return 0;
-  
-  const start = pts[0];
-  const end = pts[pts.length - 1];
-  
-  // Direktdistanz zwischen Start und End
-  const directDist = Math.hypot(end.x - start.x, end.y - start.y);
-  
-  // Wenn Start und End fast identisch sind, keine sinnvolle Linie
-  if(directDist < 5) return 0;
-  
-  let totalDeviation = 0;
-  
-  // Berechne für jeden Punkt die Distanz zur idealen Linie
-  for(let i=1; i<pts.length-1; i++){
-    const p = pts[i];
-    
-    // Distanz von Punkt p zur Linie zwischen start und end
-    // Formel: |ax + by + c| / sqrt(a² + b²)
-    // Linie: (end.y - start.y)x - (end.x - start.x)y + (end.x*start.y - end.y*start.x) = 0
-    const a = end.y - start.y;
-    const b = -(end.x - start.x);
-    const c = end.x * start.y - end.y * start.x;
-    
-    const distance = Math.abs(a * p.x + b * p.y + c) / Math.sqrt(a * a + b * b);
-    totalDeviation += distance;
-  }
-  
-  // Durchschnittliche Abweichung
-  return pts.length > 2 ? totalDeviation / (pts.length - 2) : 0;
 }
 
 function calcSpeedMinMax(pts){
@@ -1399,57 +1315,6 @@ function getCurrentFunction(){
   return "home";
 }
 
-/* ===== Features F1–F10 (Shortcut F9) ===== */
-document.addEventListener("keydown",(e)=>{ if(e.key==="F9") finishCurrentTaskRun(); });
-function finishCurrentTaskRun(){
-  if(!currentTaskKey){ alert("Keine App gewählt."); return; }
-  const steps = TASKS_CONFIG[currentTaskKey]?.steps || [];
-  const {SM,TM} = computeSMTM(steps);
-  const g = gestures.filter(x=>x.task===currentTaskKey).sort((a,b)=>a.downTime-b.downTime);
-  if(!g.length){ alert("Keine Gesten für diese App."); return; }
-
-  const strikes = g.filter(x=>x.type==="swipe");
-  const taps    = g.filter(x=>x.type==="tap");
-  const SO = strikes.length, TO = taps.length;
-
-  const strikeLengthsPx = strikes.map(x=>x.lengthPx);
-  const strikeSpeedsPxMs = strikes.map(x=>{
-    const tMs=x.durationMs; return tMs>0 ? x.lengthPx/tMs : 0;
-  });
-
-  const delaysMs=[]; for(let i=0;i<g.length-1;i++) delaysMs.push(Math.max(0, g[i+1].downTime - g[i].upTime));
-  const turnaroundS=(g.at(-1).upTime - g[0].downTime)/1000;
-
-  const F3=computeModeSlidingWindow(strikeLengthsPx), F4=avg(strikeLengthsPx);
-  const F5=computeModeSlidingWindow(strikeSpeedsPxMs), F6=avg(strikeSpeedsPxMs);
-  const F7=computeModeSlidingWindow(delaysMs),       F8=delaysMs.length?Math.round(avg(delaysMs)):0;
-  const F9=Math.round((sum(delaysMs)/1000)*100)/100, F10=Math.round(turnaroundS*100)/100;
-  const F1=SO-SM, F2=TO-TM;
-
-  const header="task,SO,TO,SM,TM,F1_Sdev,F2_Tdev,F3_modeStrikeLenPx,F4_avgStrikeLenPx,F5_modeStrikeSpeedPxMs,F6_avgStrikeSpeedPxMs,F7_modeDelayMs,F8_avgDelayMs,F9_totalDelayS,F10_turnaroundS";
-  const row=[currentTaskKey,SO,TO,SM,TM,F1,F2,round2(F3),round2(F4),round3(F5),round3(F6),Math.round(F7),F8,F9,F10].join(",");
-  appendFeatures(header,row);
-}
-function computeSMTM(steps){ let SM=0,TM=0; for(const s of steps){ if(s.expect==="strike") SM++; if(s.expect==="tap") TM++; } return {SM,TM}; }
-function computeModeSlidingWindow(values, chunkCount=100){
-  if(!values.length) return 0;
-  const minV=Math.min(...values), maxV=Math.max(...values), range=maxV-minV;
-  if(range===0) return values[0];
-  const bins=new Array(chunkCount).fill(0).map(()=>({sum:0,count:0}));
-  for(const v of values){ let i=Math.floor(((v-minV)/range)*(chunkCount-1)); i=Math.max(0,Math.min(chunkCount-1,i)); bins[i].sum+=v; bins[i].count++; }
-  const maxWin=Math.max(1,Math.ceil(0.10*chunkCount)); let best=-Infinity;
-  for(let w=1; w<=maxWin; w++){
-    let s=0,c=0; for(let i=0;i<w;i++){ s+=bins[i].sum; c+=bins[i].count; }
-    if(c>0) best=Math.max(best, s/c);
-    for(let st=1; st<=chunkCount-w; st++){ s+=bins[st+w-1].sum - bins[st-1].sum; c+=bins[st+w-1].count - bins[st-1].count; if(c>0) best=Math.max(best, s/c); }
-  }
-  return best===-Infinity?0:best;
-}
-function avg(a){ return a.length ? a.reduce((s,x)=>s+x,0)/a.length : 0; }
-function sum(a){ return a.reduce((s,x)=>s+x,0); }
-function round2(x){ return Math.round(x*100)/100; }
-function round3(x){ return Math.round(x*1000)/1000; }
-function appendFeatures(header,row){ if(!featuresArea.textContent.trim()){ featuresArea.textContent = header+"\n"+row; } else { featuresArea.textContent += "\n"+row; } }
 function exportUserDataCSV(demographics){
   console.log("Exporting user data:", demographics);
   
@@ -1479,7 +1344,7 @@ function exportTouchDataCSV(sessionId){
   if(!gestures.length){ alert("Keine Touch-Daten."); return; }
   
   // Header mit session_id als erstes Feld
-  const header=["session_id","currentTaskNumber","screen","downISO","upISO","durationMs","lengthPx","type","pathDeviationPx","directDistancePx","minSpeedPxMs","maxSpeedPxMs"];
+  const header=["session_id","currentTaskNumber","screen","downISO","upISO","durationMs","lengthPx","type","maxSpeedPxMs"];
   
   // Rows mit session_id für jede Zeile
   const rows=gestures.map(g=>{
@@ -1491,11 +1356,8 @@ function exportTouchDataCSV(sessionId){
       upISO: g.upISO || "",
       durationMs: g.durationMs ?? "",
       lengthPx: g.lengthPx ?? "",
-      type: g.type || "",
-      pathDeviationPx: g.pathDeviationPx ?? "",
-      directDistancePx: g.directDistancePx ?? "",
-      minSpeedPxMs: g.minSpeedPxMs ?? "",
-      maxSpeedPxMs: g.maxSpeedPxMs ?? ""
+    type: g.type || "",
+    maxSpeedPxMs: g.maxSpeedPxMs ?? ""
     };
     return header.map(h=>formatCSV(rowData[h])).join(",");
   });
