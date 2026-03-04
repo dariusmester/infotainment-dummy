@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Infotainment Dummy – Touch Logger</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <!-- Hintergrundmusik -->
   <audio id="backgroundMusic" loop>
@@ -15,7 +17,8 @@
   <!-- Dünne Top-Bar -->
   <header id="topbar">
     <div id="topbar-left">
-      <span id="instruction" style="font-size:16px; font-weight:600; color:#e8f3ff;">Tippe eine Kachel an, um das Untermenü zu öffnen.</span>
+      <span id="instruction" style="font-size:16px; font-weight:600; color:#e8f3ff;">Tippe eine Kachel an, um das
+        Untermenü zu öffnen.</span>
     </div>
     <div id="topbar-right">
       <button id="skipTaskBtn" style="display:none; background:#f59e0b; margin-right:8px;">Aufgabe überspringen</button>
@@ -37,8 +40,10 @@
   </main>
 
   <!-- Hinweis-Overlay (zwischen Emotionsabfrage und Aufgaben) -->
-  <div id="taskStartHint" style="display:none; position:fixed; inset:0; background:rgba(10, 15, 26, 0.95); align-items:center; justify-content:center; z-index:10000;">
-    <div style="background:#1a2535; border-left:4px solid #08a0f7; padding:32px; border-radius:12px; max-width:600px; margin:20px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+  <div id="taskStartHint"
+    style="display:none; position:fixed; inset:0; background:rgba(10, 15, 26, 0.95); align-items:center; justify-content:center; z-index:10000;">
+    <div
+      style="background:#1a2535; border-left:4px solid #08a0f7; padding:32px; border-radius:12px; max-width:600px; margin:20px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
       <p style="color:#e8f3ff; line-height:1.6; margin:0; font-size:18px; text-align:center;">
         <strong style="color:#08a0f7;">💡 Wichtiger Hinweis:</strong><br><br>
         Stellen Sie sich vor, Sie sitzen auf dem Fahrersitz Ihres Autos und bedienen das Infotainment-System.
@@ -47,50 +52,47 @@
   </div>
 
   <!-- Welcome Modal - Fullscreen -->
-  <div id="welcomeModal" style="display:flex; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column;">
-    
+  <div id="welcomeModal"
+    style="display:flex; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column;">
+
     <!-- Seiten-Container -->
-    <div id="welcomePages" style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-      
+    <div id="welcomePages"
+      style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+
       <!-- Seite 1: Willkommen & Name -->
-      <div id="welcomePage1" class="welcomePage" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; transition:opacity 0.3s, transform 0.3s;">
-        
+      <div id="welcomePage1" class="welcomePage"
+        style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; transition:opacity 0.3s, transform 0.3s;">
+
         <!-- Dropdown für Bedingungsauswahl (oben rechts, nur auf Seite 1) -->
         <div style="position:absolute; top:20px; right:20px;">
-          <select id="conditionSelect" style="padding:8px 16px; border:1px solid #505353; border-radius:8px; background:#232525; color:#e8f3ff; font-size:14px; cursor:pointer;">
+          <select id="conditionSelect"
+            style="padding:8px 16px; border:1px solid #505353; border-radius:8px; background:#232525; color:#e8f3ff; font-size:14px; cursor:pointer;">
             <option value="A">Bedingung A</option>
             <option value="B">Bedingung B</option>
             <option value="C">Bedingung C</option>
           </select>
         </div>
-        
+
         <div style="max-width:600px; width:100%;">
-          
+
           <h1 style="margin:0 0 16px 0; font-size:36px; color:#e8f3ff; text-align:center;">Willkommen!</h1>
           <p style="color:#9fb0bf; line-height:1.8; margin:0 0 24px 0; font-size:16px; text-align:center;">
             Dies ist ein Infotainment-Interface zum Testen von Benutzerinteraktionen.<br><br>
-            Sie werden eine Serie von 9 Aufgaben absolvieren, die verschiedene Funktionen des Systems erfordern. 
+            Sie werden eine Serie von 9 Aufgaben absolvieren, die verschiedene Funktionen des Systems erfordern.
             Alle Ihre Eingaben und Aktionen werden für die Analyse aufgezeichnet.
           </p>
           <form id="welcomeForm" style="display:flex; flex-direction:column; gap:16px;">
             <div style="display:flex; flex-direction:column; gap:8px;">
               <label for="userNameInput" style="font-weight:600; color:#e8f3ff; font-size:16px;">Ihr Name:</label>
-              <input 
-                id="userNameInput" 
-                type="text" 
-                placeholder="z.B. Max Mustermann" 
+              <input id="userNameInput" type="text" placeholder="z.B. Max Mustermann"
                 style="padding:16px; border:1px solid #505353; border-radius:8px; background:#232525; color:#e8f3ff; font-size:16px;"
-                required
-              >
+                required>
               <p style="color:#9fb0bf; font-size:12px; margin:4px 0 0 0; line-height:1.4;">
                 Ihr Name wird nur für die Dauer der Aufgaben gespeichert.
               </p>
             </div>
-            <button 
-              type="button" 
-              id="nextPageBtn1"
-              style="padding:16px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; margin-top:16px;"
-            >
+            <button type="button" id="nextPageBtn1"
+              style="padding:16px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; margin-top:16px;">
               Weiter
             </button>
           </form>
@@ -98,17 +100,20 @@
       </div>
 
       <!-- Seite 2: Wie funktioniert es? & Datenschutz -->
-      <div id="welcomePage2" class="welcomePage" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; overflow-y:auto;">
+      <div id="welcomePage2" class="welcomePage"
+        style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; overflow-y:auto;">
         <div style="max-width:600px; width:100%;">
           <h1 style="margin:0 0 24px 0; font-size:36px; color:#e8f3ff; text-align:center;">Wie funktioniert es?</h1>
           <div style="color:#9fb0bf; line-height:1.8; font-size:15px; display:flex; flex-direction:column; gap:20px;">
             <div>
               <h3 style="color:#08a0f7; margin:0 0 8px 0;">📋 Die 9 Aufgaben</h3>
-              <p style="margin:0;">Jede Aufgabe erfordert, dass Sie bestimmte Einstellungen oder Aktionen durchführen. Die aktuelle Aufgabe wird oben auf dem Bildschirm angezeigt.</p>
+              <p style="margin:0;">Jede Aufgabe erfordert, dass Sie bestimmte Einstellungen oder Aktionen durchführen.
+                Die aktuelle Aufgabe wird oben auf dem Bildschirm angezeigt.</p>
             </div>
             <div>
               <h3 style="color:#08a0f7; margin:0 0 8px 0;">⏱️ Bestätigung erforderlich</h3>
-              <p style="margin:0;">Wenn Sie eine Aufgabe korrekt erfüllen, wird der Text grün. Die Aufgabe muss 1 Sekunde lang grün bleiben, um als erfüllt zu gelten.</p>
+              <p style="margin:0;">Wenn Sie eine Aufgabe korrekt erfüllen, wird der Text grün. Die Aufgabe muss 1
+                Sekunde lang grün bleiben, um als erfüllt zu gelten.</p>
             </div>
             <div>
               <h3 style="color:#08a0f7; margin:0 0 8px 0;">⏱️ Dauer</h3>
@@ -116,22 +121,18 @@
             </div>
             <div style="border-top:1px solid #505353; padding-top:20px; margin-top:8px;">
               <h3 style="color:#08a0f7; margin:0 0 8px 0;">🔒 Datenschutz</h3>
-              <p style="margin:0;">Alle Ihre Daten werden <strong style="color:#e8f3ff;">vollständig anonym</strong> gespeichert. Ihr Name wird nicht mit den erfassten Interaktionsdaten verbunden. Die erfassten Daten dienen ausschließlich der Forschung und Verbesserung von Benutzeroberflächen.</p>
+              <p style="margin:0;">Alle Ihre Daten werden <strong style="color:#e8f3ff;">vollständig anonym</strong>
+                gespeichert. Ihr Name wird nicht mit den erfassten Interaktionsdaten verbunden. Die erfassten Daten
+                dienen ausschließlich der Forschung und Verbesserung von Benutzeroberflächen.</p>
             </div>
           </div>
           <div style="display:flex; gap:12px; margin-top:32px;">
-            <button 
-              type="button" 
-              id="prevPageBtn2"
-              style="flex:1; padding:16px; background:#505353; color:#e8f3ff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;"
-            >
+            <button type="button" id="prevPageBtn2"
+              style="flex:1; padding:16px; background:#505353; color:#e8f3ff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;">
               Zurück
             </button>
-            <button 
-              type="button" 
-              id="nextPageBtn2"
-              style="flex:1; padding:16px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;"
-            >
+            <button type="button" id="nextPageBtn2"
+              style="flex:1; padding:16px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;">
               Weiter
             </button>
           </div>
@@ -139,60 +140,73 @@
       </div>
 
       <!-- Seite 2.5: Bildergalerie (automatische Diashow) -->
-      <div id="welcomePageImages" class="welcomePage" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; width:100%; height:100%; background:#0a0f1a;">
-        <div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:15px;">
-          <div id="imageInstruction" style="color:#e8f3ff; font-size:18px; font-weight:600; margin-bottom:15px; text-align:center; padding:0 20px;">
+      <div id="welcomePageImages" class="welcomePage"
+        style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; width:100%; height:100%; background:#0a0f1a;">
+        <div
+          style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:15px;">
+          <div id="imageInstruction"
+            style="color:#e8f3ff; font-size:18px; font-weight:600; margin-bottom:15px; text-align:center; padding:0 20px;">
             Bitte schauen Sie sich die folgenden 5 Bilder genau an.
           </div>
-          <img id="slideshowImage" src="" alt="Bild" style="max-width:95%; max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+          <img id="slideshowImage" src="" alt="Bild"
+            style="max-width:95%; max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
         </div>
       </div>
 
       <!-- Seite 3: Emotionale Zustandsabfrage (Vorher) -->
-      <div id="welcomePage3" class="welcomePage" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; overflow-y:auto;">
+      <div id="welcomePage3" class="welcomePage"
+        style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; padding:40px; width:100%; height:100%; overflow-y:auto;">
         <div style="max-width:700px; width:100%;">
           <h1 style="margin:0 0 16px 0; font-size:36px; color:#e8f3ff; text-align:center;">Ihr emotionaler Zustand</h1>
           <p style="color:#9fb0bf; line-height:1.8; margin:0 0 32px 0; font-size:16px; text-align:center;">
             Bitte ordnen Sie ihr aktuelles Befinden anhand der folgenden Bilder ein.
           </p>
-          
+
           <form id="emotionFormBefore" style="display:flex; flex-direction:column; gap:32px;">
             <!-- Frage 1: Emotionaler Zustand -->
             <div style="display:flex; flex-direction:column; gap:12px;">
               <label style="font-weight:600; color:#e8f3ff; font-size:18px; text-align:center;">
                 Valenz
               </label>
-              <img src="images/Valence.jpeg" alt="Bild" style="max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
-                <div style="display:flex; justify-content:space-between; gap:8px;">
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="emotion_before" value="1" required style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">1</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="emotion_before" value="2" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">2</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="emotion_before" value="3" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">3</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="emotion_before" value="4" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">4</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="emotion_before" value="5" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">5</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="emotion_before" value="6" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">6</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="emotion_before" value="7" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">7</span>
-                  </label>
-                </div>
+              <img src="images/Valence.jpeg" alt="Bild"
+                style="max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+              <div style="display:flex; justify-content:space-between; gap:8px;">
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="emotion_before" value="1" required style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">1</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="emotion_before" value="2" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">2</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="emotion_before" value="3" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">3</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="emotion_before" value="4" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">4</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="emotion_before" value="5" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">5</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="emotion_before" value="6" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">6</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="emotion_before" value="7" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">7</span>
+                </label>
+              </div>
 
             </div>
 
@@ -201,54 +215,56 @@
               <label style="font-weight:600; color:#e8f3ff; font-size:18px; text-align:center;">
                 Arousal
               </label>
-              <img src="images/Arousal.jpeg" alt="Bild" style="max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
-                <div style="display:flex; justify-content:space-between; gap:8px;">
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="activation_before" value="1" required style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">1</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="activation_before" value="2" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">2</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="activation_before" value="3" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">3</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="activation_before" value="4" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">4</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="activation_before" value="5" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">5</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="activation_before" value="6" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">6</span>
-                  </label>
-                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                    <input type="radio" name="activation_before" value="7" style="width:20px; height:20px;">
-                    <span style="color:#e8f3ff; font-size:12px;">7</span>
-                  </label>
-                </div>
-              
+              <img src="images/Arousal.jpeg" alt="Bild"
+                style="max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+              <div style="display:flex; justify-content:space-between; gap:8px;">
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="activation_before" value="1" required style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">1</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="activation_before" value="2" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">2</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="activation_before" value="3" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">3</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="activation_before" value="4" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">4</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="activation_before" value="5" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">5</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="activation_before" value="6" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">6</span>
+                </label>
+                <label
+                  style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+                  <input type="radio" name="activation_before" value="7" style="width:20px; height:20px;">
+                  <span style="color:#e8f3ff; font-size:12px;">7</span>
+                </label>
+              </div>
+
             </div>
           </form>
 
           <div style="display:flex; gap:12px; margin-top:32px;">
-            <button 
-              type="button" 
-              id="prevPageBtn3"
-              style="flex:1; padding:16px; background:#505353; color:#e8f3ff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;"
-            >
+            <button type="button" id="prevPageBtn3"
+              style="flex:1; padding:16px; background:#505353; color:#e8f3ff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;">
               Zurück
             </button>
-            <button 
-              type="button" 
-              id="nextPageBtn3"
-              style="flex:1; padding:16px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;"
-            >
+            <button type="button" id="nextPageBtn3"
+              style="flex:1; padding:16px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;">
               Starten
             </button>
           </div>
@@ -259,54 +275,52 @@
   </div>
 
   <!-- Emotion Modal After - Fullscreen -->
-  <div id="emotionModalAfter" style="display:none; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column; overflow-y:auto;">
+  <div id="emotionModalAfter"
+    style="display:none; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column; overflow-y:auto;">
     <div style="max-width:700px; width:100%; padding:40px;">
       <h1 style="margin:0 0 16px 0; font-size:36px; color:#e8f3ff; text-align:center;">Ihr emotionaler Zustand</h1>
       <p style="color:#9fb0bf; line-height:1.8; margin:0 0 32px 0; font-size:16px; text-align:center;">
         Bitte beantworten Sie erneut die folgenden Fragen zu Ihrem aktuellen Befinden.
       </p>
-      
+
       <form id="emotionFormAfter" style="display:flex; flex-direction:column; gap:32px;">
         <!-- Frage 1: Emotionaler Zustand -->
         <div style="display:flex; flex-direction:column; gap:12px;">
           <label style="font-weight:600; color:#e8f3ff; font-size:18px; text-align:center;">
-             Valenz
-              </label>
-              <img src="images/Valence.jpeg" alt="Bild" style="max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
-                <div style="display:flex; justify-content:space-between; color:#9fb0bf; font-size:14px; padding:0 8px;">
-              <span>Sehr negativ</span>
-              <span>Sehr positiv</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; gap:8px;">
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="emotion_after" value="1" required style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">1</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="emotion_after" value="2" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">2</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="emotion_after" value="3" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">3</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="emotion_after" value="4" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">4</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="emotion_after" value="5" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">5</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="emotion_after" value="6" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">6</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="emotion_after" value="7" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">7</span>
-              </label>
-            </div>
+            Valenz
+          </label>
+          <img src="images/Valence.jpeg" alt="Bild"
+            style="max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+          <div style="display:flex; justify-content:space-between; gap:8px;">
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="emotion_after" value="1" required style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">1</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="emotion_after" value="2" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">2</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="emotion_after" value="3" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">3</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="emotion_after" value="4" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">4</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="emotion_after" value="5" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">5</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="emotion_after" value="6" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">6</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="emotion_after" value="7" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">7</span>
+            </label>
+          </div>
 
         </div>
 
@@ -314,52 +328,45 @@
         <div style="display:flex; flex-direction:column; gap:12px;">
           <label style="font-weight:600; color:#e8f3ff; font-size:18px; text-align:center;">
             Arousal
-              </label>
-              <img src="images/Arousal.jpeg" alt="Bild" style="max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
-              <div style="display:flex; justify-content:space-between; color:#9fb0bf; font-size:14px; padding:0 8px;">
-              <span>Sehr ruhig/gelassen</span>
-              <span>Sehr aufgeregt/nervös</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; gap:8px;">
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="activation_after" value="1" required style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">1</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="activation_after" value="2" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">2</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="activation_after" value="3" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">3</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="activation_after" value="4" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">4</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="activation_after" value="5" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">5</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="activation_after" value="6" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">6</span>
-              </label>
-              <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
-                <input type="radio" name="activation_after" value="7" style="width:20px; height:20px;">
-                <span style="color:#e8f3ff; font-size:12px;">7</span>
-              </label>
-
+          </label>
+          <img src="images/Arousal.jpeg" alt="Bild"
+            style="max-height:87%; object-fit:contain; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+          <div style="display:flex; justify-content:space-between; gap:8px;">
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="activation_after" value="1" required style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">1</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="activation_after" value="2" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">2</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="activation_after" value="3" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">3</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="activation_after" value="4" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">4</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="activation_after" value="5" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">5</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="activation_after" value="6" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">6</span>
+            </label>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; cursor:pointer;">
+              <input type="radio" name="activation_after" value="7" style="width:20px; height:20px;">
+              <span style="color:#e8f3ff; font-size:12px;">7</span>
+            </label>
           </div>
         </div>
       </form>
 
       <div style="display:flex; gap:12px; margin-top:32px; justify-content:center;">
-        <button 
-          type="button" 
-          id="continueToThankYou"
-          style="padding:16px 48px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;"
-        >
+        <button type="button" id="continueToThankYou"
+          style="padding:16px 48px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;">
           Weiter
         </button>
       </div>
@@ -367,54 +374,55 @@
   </div>
 
   <!-- Demographics Modal - Fullscreen -->
-  <div id="demographicsModal" style="display:none; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column; overflow-y:auto;">
+  <div id="demographicsModal"
+    style="display:none; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column; overflow-y:auto;">
     <div style="max-width:600px; width:100%; padding:40px;">
       <h1 style="margin:0 0 16px 0; font-size:36px; color:#e8f3ff; text-align:center;">Ihre Angaben</h1>
       <p style="color:#9fb0bf; line-height:1.8; margin:0 0 32px 0; font-size:16px; text-align:center;">
-        Bitte geben Sie einige demographische Informationen an. Diese Daten werden anonym für Forschungszwecke verwendet.
+        Bitte geben Sie einige demographische Informationen an. Diese Daten werden anonym für Forschungszwecke
+        verwendet.
       </p>
       <form id="demographicForm" style="display:flex; flex-direction:column; gap:20px;">
         <!-- Alter -->
         <div style="display:flex; flex-direction:column; gap:8px;">
           <label for="userAgeInput" style="font-weight:600; color:#e8f3ff; font-size:16px;">Alter:</label>
-          <input 
-            id="userAgeInput" 
-            type="number" 
-            min="18" 
-            max="99" 
-            placeholder="z.B. 25" 
+          <input id="userAgeInput" type="number" min="18" max="99" placeholder="z.B. 25"
             style="padding:16px; border:1px solid #505353; border-radius:8px; background:#232525; color:#e8f3ff; font-size:16px;"
-            required
-          >
+            required>
         </div>
-        
+
         <!-- Geschlecht -->
         <div style="display:flex; flex-direction:column; gap:8px;">
           <label style="font-weight:600; color:#e8f3ff; font-size:16px;">Geschlecht:</label>
           <div style="display:flex; gap:12px; flex-wrap:wrap;">
-            <label style="display:flex; align-items:center; gap:8px; color:#e8f3ff; cursor:pointer; padding:12px 20px; border:1px solid #505353; border-radius:8px; background:#232525;">
-              <input type="radio" name="gender" value="männlich" required style="width:18px; height:18px; cursor:pointer;">
+            <label
+              style="display:flex; align-items:center; gap:8px; color:#e8f3ff; cursor:pointer; padding:12px 20px; border:1px solid #505353; border-radius:8px; background:#232525;">
+              <input type="radio" name="gender" value="männlich" required
+                style="width:18px; height:18px; cursor:pointer;">
               <span>Männlich</span>
             </label>
-            <label style="display:flex; align-items:center; gap:8px; color:#e8f3ff; cursor:pointer; padding:12px 20px; border:1px solid #505353; border-radius:8px; background:#232525;">
-              <input type="radio" name="gender" value="weiblich" required style="width:18px; height:18px; cursor:pointer;">
+            <label
+              style="display:flex; align-items:center; gap:8px; color:#e8f3ff; cursor:pointer; padding:12px 20px; border:1px solid #505353; border-radius:8px; background:#232525;">
+              <input type="radio" name="gender" value="weiblich" required
+                style="width:18px; height:18px; cursor:pointer;">
               <span>Weiblich</span>
             </label>
-            <label style="display:flex; align-items:center; gap:8px; color:#e8f3ff; cursor:pointer; padding:12px 20px; border:1px solid #505353; border-radius:8px; background:#232525;">
-              <input type="radio" name="gender" value="divers" required style="width:18px; height:18px; cursor:pointer;">
+            <label
+              style="display:flex; align-items:center; gap:8px; color:#e8f3ff; cursor:pointer; padding:12px 20px; border:1px solid #505353; border-radius:8px; background:#232525;">
+              <input type="radio" name="gender" value="divers" required
+                style="width:18px; height:18px; cursor:pointer;">
               <span>Divers</span>
             </label>
           </div>
         </div>
-        
+
         <!-- Beruflicher Status -->
         <div style="display:flex; flex-direction:column; gap:8px;">
-          <label for="userOccupationInput" style="font-weight:600; color:#e8f3ff; font-size:16px;">Beruflicher Status:</label>
-          <select 
-            id="userOccupationInput" 
+          <label for="userOccupationInput" style="font-weight:600; color:#e8f3ff; font-size:16px;">Beruflicher
+            Status:</label>
+          <select id="userOccupationInput"
             style="padding:16px; border:1px solid #505353; border-radius:8px; background:#232525; color:#e8f3ff; font-size:16px; cursor:pointer;"
-            required
-          >
+            required>
             <option value="" disabled selected>Bitte wählen...</option>
             <option value="Schüler/in">Schüler/in</option>
             <option value="Student/in">Student/in</option>
@@ -426,15 +434,14 @@
             <option value="Sonstiges">Sonstiges</option>
           </select>
         </div>
-        
+
         <!-- Höchster Bildungsgrad -->
         <div style="display:flex; flex-direction:column; gap:8px;">
-          <label for="userEducationInput" style="font-weight:600; color:#e8f3ff; font-size:16px;">Höchster Bildungsgrad:</label>
-          <select 
-            id="userEducationInput" 
+          <label for="userEducationInput" style="font-weight:600; color:#e8f3ff; font-size:16px;">Höchster
+            Bildungsgrad:</label>
+          <select id="userEducationInput"
             style="padding:16px; border:1px solid #505353; border-radius:8px; background:#232525; color:#e8f3ff; font-size:16px; cursor:pointer;"
-            required
-          >
+            required>
             <option value="" disabled selected>Bitte wählen...</option>
             <option value="Kein Abschluss">Kein Abschluss</option>
             <option value="Hauptschulabschluss">Hauptschulabschluss</option>
@@ -448,7 +455,7 @@
             <option value="Sonstiges">Sonstiges</option>
           </select>
         </div>
-        
+
         <!-- Digitale Affinität -->
         <div style="display:flex; flex-direction:column; gap:8px;">
           <label style="font-weight:600; color:#e8f3ff; font-size:16px; text-align:center;">Digitale Affinität:</label>
@@ -495,11 +502,8 @@
       </form>
 
       <div style="display:flex; gap:12px; margin-top:32px; justify-content:center;">
-        <button 
-          type="button" 
-          id="continueToDemographicsToThankYou"
-          style="padding:16px 48px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;"
-        >
+        <button type="button" id="continueToDemographicsToThankYou"
+          style="padding:16px 48px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px;">
           Weiter
         </button>
       </div>
@@ -507,24 +511,24 @@
   </div>
 
   <!-- Thank You Modal - Fullscreen -->
-  <div id="thankYouModal" style="display:none; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column;">
+  <div id="thankYouModal"
+    style="display:none; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column;">
     <div style="max-width:600px; width:100%; padding:40px; text-align:center;">
       <h1 style="margin:0 0 24px 0; font-size:48px; color:#08a0f7;">Vielen Dank!</h1>
       <p style="color:#e8f3ff; line-height:1.8; margin:0 0 32px 0; font-size:18px;">
         Sie haben alle Aufgaben erfolgreich abgeschlossen.<br><br>
         Ihre Daten wurden erfasst und sind bereit zum Export.
       </p>
-      <button 
-        id="continueToExport"
-        style="padding:20px 48px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:18px;"
-      >
+      <button id="continueToExport"
+        style="padding:20px 48px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:18px;">
         Weiter zum Export
       </button>
     </div>
   </div>
 
   <!-- Export Modal - Fullscreen -->
-  <div id="exportModal" style="display:none; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column;">
+  <div id="exportModal"
+    style="display:none; position:fixed; inset:0; background:linear-gradient(135deg, #0f1a2a 0%, #1a2535 100%); align-items:center; justify-content:center; z-index:9999; flex-direction:column;">
     <div style="max-width:600px; width:100%; padding:40px; text-align:center;">
       <h1 style="margin:0 0 24px 0; font-size:42px; color:#e8f3ff;">Daten exportieren</h1>
       <p style="color:#9fb0bf; line-height:1.8; margin:0 0 40px 0; font-size:16px;">
@@ -532,22 +536,16 @@
         Klicken Sie nacheinander auf beide Buttons.
       </p>
       <div style="display:flex; flex-direction:column; gap:16px; max-width:400px; margin:0 auto;">
-        <button 
-          id="exportUserDataBtn"
-          style="padding:18px 32px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; transition:all 0.2s;"
-        >
+        <button id="exportUserDataBtn"
+          style="padding:18px 32px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; transition:all 0.2s;">
           📄 User Data CSV herunterladen
         </button>
-        <button 
-          id="exportTouchDataBtn"
-          style="padding:18px 32px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; transition:all 0.2s;"
-        >
+        <button id="exportTouchDataBtn"
+          style="padding:18px 32px; background:#08a0f7; color:#00131c; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; transition:all 0.2s;">
           📊 Touch Data CSV herunterladen
         </button>
-        <button 
-          id="finishBtn"
-          style="padding:18px 32px; background:#505353; color:#e8f3ff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; margin-top:24px; transition:all 0.2s;"
-        >
+        <button id="finishBtn"
+          style="padding:18px 32px; background:#505353; color:#e8f3ff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:16px; margin-top:24px; transition:all 0.2s;">
           ✓ Fertig
         </button>
       </div>
@@ -577,4 +575,5 @@
 
   <script src="script.js"></script>
 </body>
+
 </html>
